@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestCalc</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="calculator">
+    <div class="display">
+      <div id="history" aria-live="polite"></div>
+      <div id="display" aria-live="polite">0</div>
+    </div>
+    <div class="buttons">
+      <button class="btn-function" data-action="clear" aria-label="Clear">C</button>
+      <button class="btn-function" data-action="delete" aria-label="Delete">DEL</button>
+      <button class="btn-function" data-action="toggle-sign" aria-label="Toggle sign">+/-</button>
+      <button class="btn-operator" data-action="operator" data-value="÷" aria-label="Divide">÷</button>
+
+      <button data-action="digit" data-value="7" aria-label="7">7</button>
+      <button data-action="digit" data-value="8" aria-label="8">8</button>
+      <button data-action="digit" data-value="9" aria-label="9">9</button>
+      <button class="btn-operator" data-action="operator" data-value="×" aria-label="Multiply">×</button>
+
+      <button data-action="digit" data-value="4" aria-label="4">4</button>
+      <button data-action="digit" data-value="5" aria-label="5">5</button>
+      <button data-action="digit" data-value="6" aria-label="6">6</button>
+      <button class="btn-operator" data-action="operator" data-value="-" aria-label="Subtract">-</button>
+
+      <button data-action="digit" data-value="1" aria-label="1">1</button>
+      <button data-action="digit" data-value="2" aria-label="2">2</button>
+      <button data-action="digit" data-value="3" aria-label="3">3</button>
+      <button class="btn-operator" data-action="operator" data-value="+" aria-label="Add">+</button>
+
+      <button class="btn-wide" data-action="digit" data-value="0" aria-label="0">0</button>
+      <button data-action="decimal" aria-label="Decimal point">.</button>
+      <button class="btn-equals" data-action="equals" aria-label="Equals">=</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

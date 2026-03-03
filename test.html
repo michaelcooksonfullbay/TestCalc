@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestCalc — Manual Test Harness</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 24px;
+      max-width: 860px;
+      margin: 0 auto;
+      background: #fafafa;
+      color: #222;
+    }
+    h1 { margin-bottom: 8px; }
+    p.subtitle { color: #666; margin-bottom: 24px; }
+    .section {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .section h2 { font-size: 16px; margin-bottom: 12px; }
+    button {
+      margin: 4px;
+      padding: 8px 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #f0f2f5; }
+    input, select {
+      padding: 8px;
+      margin: 4px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    input { width: 60px; }
+    .state-box {
+      background: #f5f5f5;
+      padding: 14px;
+      border-radius: 8px;
+      margin: 8px 0;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    #log {
+      background: #1e1e2e;
+      color: #a6e3a1;
+      padding: 16px;
+      border-radius: 8px;
+      min-height: 200px;
+      max-height: 420px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', 'Consolas', monospace;
+      font-size: 13px;
+    }
+    .row { display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+    .row:last-child { margin-bottom: 0; }
+    label { font-size: 14px; margin-right: 8px; }
+  </style>
+</head>
+<body>
+  <h1>TestCalc — Manual Test Harness</h1>
+  <p class="subtitle">Exercise CalculatorEngine functions directly and inspect internal state.</p>
+
+  <div class="section">
+    <h2>Current State</h2>
+    <div id="state-view" class="state-box">Not initialized</div>
+    <button onclick="resetState()">Reset State</button>
+  </div>
+
+  <div class="section">
+    <h2>Input Operations</h2>
+    <div class="row">
+      <label>Digit:</label>
+      <input id="digit-input" type="text" maxlength="1" value="5">
+      <button onclick="testDigit()">Input Digit</button>
+    </div>
+    <div class="row">
+      <button onclick="testDecimal()">Input Decimal (.)</button>
+    </div>
+    <div class="row">
+      <label>Operator:</label>
+      <select id="op-input">
+        <option value="+">+</option>
+        <option value="-">-</option>
+        <option value="×">×</option>
+        <option value="÷">÷</option>
+      </select>
+      <button onclick="testOperator()">Input Operator</button>
+    </div>
+    <div class="row">
+      <button onclick="testToggleSign()">Toggle Sign (+/-)</button>
+      <button onclick="testDelete()">Delete (DEL)</button>
+      <button onclick="testClear()">Clear (C)</button>
+      <button onclick="testEquals()">Evaluate (=)</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Quick Scenarios</h2>
+    <div class="row">
+      <button onclick="runScenario('basic-add')">2 + 3 =</button>
+      <button onclick="runScenario('chain')">2 + 3 + 4 =</button>
+      <button onclick="runScenario('decimal-add')">0.1 + 0.2 =</button>
+      <button onclick="runScenario('divide-zero')">5 ÷ 0 =</button>
+    </div>
+    <div class="row">
+      <button onclick="runScenario('double-op')">5 + × 3 =</button>
+      <button onclick="runScenario('negate-zero')">0 then +/-</button>
+      <button onclick="runScenario('multi-decimal')">3 . 1 . 4</button>
+      <button onclick="runScenario('del-after-eq')">2 + 3 = DEL</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Log</h2>
+    <div id="log"></div>
+    <button onclick="clearLog()" style="margin-top: 10px;">Clear Log</button>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    let state = CalculatorEngine.createInitialState();
+    const logEl = document.getElementById('log');
+    const stateEl = document.getElementById('state-view');
+
+    function log(msg) {
+      logEl.textContent += msg + '\n';
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function clearLog() { logEl.textContent = ''; }
+
+    function showState() {
+      const view = {
+        currentInput: state.currentInput,
+        expression: state.expression,
+        evaluated: state.evaluated,
+        historyText: CalculatorEngine.getHistoryText(state),
+      };
+      stateEl.textContent = JSON.stringify(view, null, 2);
+    }
+
+    function resetState() {
+      state = CalculatorEngine.createInitialState();
+      log('--- State reset ---');
+      showState();
+    }
+
+    function testDigit() {
+      const d = document.getElementById('digit-input').value;
+      state = CalculatorEngine.inputDigit(state, d);
+      log('inputDigit("' + d + '")  =>  display: "' + state.currentInput + '"');
+      showState();
+    }
+
+    function testDecimal() {
+      state = CalculatorEngine.inputDecimal(state);
+      log('inputDecimal()  =>  display: "' + state.currentInput + '"');
+      showState();
+    }
+
+    function testOperator() {
+      const op = document.getElementById('op-input').value;
+      state = CalculatorEngine.inputOperator(state, op);
+      log('inputOperator("' + op + '")  =>  history: "' + CalculatorEngine.getHistoryText(state) + '"');
+      showState();
+    }
+
+    function testToggleSign() {
+      state = CalculatorEngine.toggleSign(state);
+      log('toggleSign()  =>  display: "' + state.currentInput + '"');
+      showState();
+    }
+
+    function testDelete() {
+      state = CalculatorEngine.deleteLast(state);
+      log('deleteLast()  =>  display: "' + state.currentInput + '"');
+      showState();
+    }
+
+    function testClear() {
+      state = CalculatorEngine.clear();
+      log('clear()  =>  display: "' + state.currentInput + '"');
+      showState();
+    }
+
+    function testEquals() {
+      state = CalculatorEngine.evaluate(state);
+      log('evaluate()  =>  display: "' + state.currentInput + '"  |  history: "' + CalculatorEngine.getHistoryText(state) + '"');
+      showState();
+    }
+
+    function runScenario(name) {
+      log('\n=== Scenario: ' + name + ' ===');
+      state = CalculatorEngine.createInitialState();
+
+      switch (name) {
+        case 'basic-add':
+          state = CalculatorEngine.inputDigit(state, '2');
+          state = CalculatorEngine.inputOperator(state, '+');
+          state = CalculatorEngine.inputDigit(state, '3');
+          state = CalculatorEngine.evaluate(state);
+          log('2 + 3  =>  ' + state.currentInput);
+          break;
+
+        case 'chain':
+          state = CalculatorEngine.inputDigit(state, '2');
+          state = CalculatorEngine.inputOperator(state, '+');
+          state = CalculatorEngine.inputDigit(state, '3');
+          state = CalculatorEngine.inputOperator(state, '+');
+          state = CalculatorEngine.inputDigit(state, '4');
+          state = CalculatorEngine.evaluate(state);
+          log('2 + 3 + 4  =>  ' + state.currentInput);
+          break;
+
+        case 'decimal-add':
+          state = CalculatorEngine.inputDecimal(state);
+          state = CalculatorEngine.inputDigit(state, '1');
+          state = CalculatorEngine.inputOperator(state, '+');
+          state = CalculatorEngine.inputDecimal(state);
+          state = CalculatorEngine.inputDigit(state, '2');
+          state = CalculatorEngine.evaluate(state);
+          log('0.1 + 0.2  =>  ' + state.currentInput);
+          break;
+
+        case 'divide-zero':
+          state = CalculatorEngine.inputDigit(state, '5');
+          state = CalculatorEngine.inputOperator(state, '\u00f7');
+          state = CalculatorEngine.evaluate(state);
+          log('5 \u00f7 0  =>  ' + state.currentInput);
+          break;
+
+        case 'double-op':
+          state = CalculatorEngine.inputDigit(state, '5');
+          state = CalculatorEngine.inputOperator(state, '+');
+          state = CalculatorEngine.inputOperator(state, '\u00d7');
+          state = CalculatorEngine.inputDigit(state, '3');
+          state = CalculatorEngine.evaluate(state);
+          log('5 [+] [\u00d7] 3  =>  ' + state.currentInput + '  (history: ' + CalculatorEngine.getHistoryText(state) + ')');
+          break;
+
+        case 'negate-zero':
+          state = CalculatorEngine.toggleSign(state);
+          log('+/- on 0  =>  display: "' + state.currentInput + '"');
+          break;
+
+        case 'multi-decimal':
+          state = CalculatorEngine.inputDigit(state, '3');
+          state = CalculatorEngine.inputDecimal(state);
+          state = CalculatorEngine.inputDigit(state, '1');
+          state = CalculatorEngine.inputDecimal(state);
+          state = CalculatorEngine.inputDigit(state, '4');
+          log('3 . 1 . 4  =>  display: "' + state.currentInput + '"');
+          break;
+
+        case 'del-after-eq':
+          state = CalculatorEngine.inputDigit(state, '2');
+          state = CalculatorEngine.inputOperator(state, '+');
+          state = CalculatorEngine.inputDigit(state, '3');
+          state = CalculatorEngine.evaluate(state);
+          log('2 + 3 = ' + state.currentInput);
+          state = CalculatorEngine.deleteLast(state);
+          log('DEL  =>  display: "' + state.currentInput + '"  (evaluated still: ' + state.evaluated + ')');
+          break;
+      }
+      showState();
+    }
+
+    showState();
+    log('Test harness ready. Use the buttons above to exercise CalculatorEngine functions.\n');
+  </script>
+</body>
+</html>

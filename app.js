@@ -349,10 +349,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const zipcode = document.getElementById('signup-zipcode').value.trim();
       const occupation = document.getElementById('signup-occupation').value.trim();
 
-      if (!username || !password || !email || !phone || !firstname || !lastname) {
+      if (!username || !password || !email || !phone) {
         signupError.textContent = 'All required fields must be filled in';
         return;
       }
+      // BUG: firstname and lastname are marked required (*) in the UI but not validated here
 
       const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
       if (!phoneRegex.test(phone)) {
@@ -362,10 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // BUG: no email validation at all — accepts any string
 
-      if (!document.getElementById('eula-agree').checked) {
-        signupError.textContent = 'You must agree to the EULA to create an account';
-        return;
-      }
+      // BUG: EULA agreement checkbox is not validated — form submits without accepting terms
 
       if (USERS[username]) {
         signupError.textContent = 'Username already taken';

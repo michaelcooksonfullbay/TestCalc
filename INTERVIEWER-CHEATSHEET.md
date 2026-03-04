@@ -15,7 +15,7 @@
 
 ---
 
-## All Known Bugs (24 total)
+## All Known Bugs (26 total)
 
 ### Calculator Engine (Both V1 & V2)
 
@@ -121,39 +121,49 @@ Sign up with email "notanemail" or "12345" — accepted. Code has `// BUG: no em
 > **Tracker:** DEF-112 is marked **Fixed** (deployed Feb 28) — but no validation exists. This is the **secondary trap**. Harder to catch than DEF-127 because you have to go through the full signup flow.
 > **Test:** No coverage.
 
+**18. EULA checkbox not enforced** — `app.js:365` / `v2/app.js:417`
+The signup form has a "I have read and agree to the Terms of Service and EULA" checkbox, but unchecking it (or never checking it) does not prevent account creation. The form submits successfully without agreeing to the terms.
+> **Tracker:** Not tracked.
+> **Test:** No coverage. A careful candidate filling out the signup form might skip the checkbox and notice it goes through anyway.
+
+**19. First/Last name marked required but not validated** — `app.js:352` / `v2/app.js:403`
+The signup form labels for First Name and Last Name both have a red asterisk (`*`) indicating they're required, but the validation only checks username, password, email, and phone. You can create an account with no name at all.
+> **Tracker:** Not tracked. Note: the API docs say firstname/lastname are "optional" for the API endpoint, which is consistent with the API code — but the UI labels contradict this by showing `*`.
+> **Test:** No coverage.
+
 ### V2-Only Bugs
 
-**18. Memory not reset on logout** — `v2/app.js:120`
+**20. Memory not reset on logout** — `v2/app.js:120`
 M+ a value as alice, logout — "M" indicator persists, bob can MR alice's value. `memoryValue` is global, not user-scoped.
 > **Tracker:** DEF-134 (Open, P2). Description is slightly off — says "indicator persists" but the deeper issue is memory *value* leaking across users.
 > **Test:** No coverage. V2 test report explicitly lists "Memory persistence across login/logout" as a coverage gap.
 
-**19. Guest memory operations leak to user** — `v2/app.js:329`
+**21. Guest memory operations leak to user** — `v2/app.js:329`
 Fail login as alice, use M+ as guest, login as alice — her memory modified. Same `lastAttemptedUser` pattern as Bug #13.
 > **Tracker:** Not tracked.
 > **Test:** No coverage. V2 test report lists "Memory interaction with guest mode" as a coverage gap.
 
-**20. API memory update doesn't refresh UI** — `v2/app.js:662`
+**22. API memory update doesn't refresh UI** — `v2/app.js:662`
 Use API docs to PUT /memory for alice — indicator doesn't appear on calculator, MR recalls old value. The API handler modifies the user object but never updates the global `memoryValue` or calls `updateMemoryIndicator()`.
 > **Tracker:** Not tracked.
 > **Test:** No coverage. V2 test report lists "Memory API endpoints" as a coverage gap.
 
-**21. Percent is naive divide-by-100** — `v2/app.js:701`
+**23. Percent is naive divide-by-100** — `v2/app.js:701`
 `200 + 10 % =` → 200.1 (not 220). Just divides by 100, ignores expression context.
 > **Tracker:** DEF-156 (Open, P3). The defect describes the issue well but product-owner asks "is percent-of-base the intended behavior or simple divide-by-100?" — left unresolved. A candidate might debate whether this is a bug or a spec question.
 > **Test:** No coverage. V2 test report lists "Percent button in mid-expression contexts" as a coverage gap.
 
-**22. Zero button lost btn-wide class** — `v2/index.html:76`
+**24. Zero button lost btn-wide class** — `v2/index.html:76`
 The 0 button is narrow in v2 (single cell) vs wide in v1 (spans two columns). Subtle visual regression.
 > **Tracker:** Not tracked.
 > **Test:** No coverage.
 
-**23. No keyboard shortcuts for memory operations** — `v2/app.js:758`
+**25. No keyboard shortcuts for memory operations** — `v2/app.js:758`
 MC, MR, M+, M- have no keyboard shortcuts at all. Comment: `// No keyboard shortcuts for memory operations (intentional omission)`.
 > **Tracker:** Not tracked.
 > **Test:** No coverage.
 
-**24. showDeleteButtons flag leaks after ghost login** — `app.js:119`
+**26. showDeleteButtons flag leaks after ghost login** — `app.js:119`
 After ghost login (Bug #15) and logout, `showDeleteButtons` remains `true`. Subsequent guest history entries render with delete buttons and `data-entryId` attributes even though no user is logged in.
 > **Tracker:** Not tracked.
 > **Test:** No coverage.

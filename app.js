@@ -114,6 +114,7 @@ const USERS = {
 };
 
 let currentUser = null;
+let lastAttemptedUser = null;
 
 // UI — only initializes when the calculator element exists
 document.addEventListener('DOMContentLoaded', () => {
@@ -123,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const displayEl = document.getElementById('display');
   const historyEl = document.getElementById('history');
   const historyListEl = document.getElementById('history-list');
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  const guestIndicator = document.getElementById('guest-indicator');
 
   // Login bar elements
   const loginForm = document.getElementById('login-form');
@@ -167,6 +170,11 @@ document.addEventListener('DOMContentLoaded', () => {
       USERS[currentUser].history.push({ expression, result });
     }
 
+    // BUG: guest calculations leak to last attempted user's history
+    if (!currentUser && lastAttemptedUser && USERS[lastAttemptedUser]) {
+      USERS[lastAttemptedUser].history.push({ expression, result });
+    }
+
     const entry = document.createElement('div');
     entry.className = 'history-entry';
     entry.innerHTML =
@@ -180,23 +188,33 @@ document.addEventListener('DOMContentLoaded', () => {
       loginForm.style.display = 'none';
       loggedInInfo.style.display = 'flex';
       currentUserLabel.textContent = currentUser;
+      if (guestIndicator) guestIndicator.style.display = 'none';
     } else {
       loginForm.style.display = 'flex';
       loggedInInfo.style.display = 'none';
       usernameInput.value = '';
       passwordInput.value = '';
       loginError.textContent = '';
+      if (guestIndicator) guestIndicator.style.display = '';
     }
   }
 
   function login(username, password) {
     const user = USERS[username];
-    if (!user || user.password !== password) {
+    if (!user) {
+      lastAttemptedUser = null;
+      loginError.textContent = 'Invalid username or password';
+      return false;
+    }
+    if (user.password !== password) {
+      // BUG: stores attempted username so guest calcs leak to this user's history
+      lastAttemptedUser = username;
       loginError.textContent = 'Invalid username or password';
       return false;
     }
     loginError.textContent = '';
     currentUser = username;
+    lastAttemptedUser = null;
     renderHistoryPanel(user.history);
     updateLoginUI();
     return true;
@@ -225,6 +243,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', logout);
+  }
+
+  // BUG: only clears the DOM, not the stored history array
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', () => {
+      historyListEl.innerHTML = '';
+    });
   }
 
   function handleDigit(d) {

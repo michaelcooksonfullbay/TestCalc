@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TestCalc</title>
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body>
+  <div id="guest-indicator">Guest Mode</div>
   <div id="login-bar">
+    <a href="api-docs.html" target="_blank" id="api-docs-link">API Docs</a>
     <div id="login-form">
       <input type="text" id="username-input" placeholder="Username" autocomplete="off">
       <input type="password" id="password-input" placeholder="Password">
@@ -53,10 +55,13 @@
     </div>
 
     <div id="history-panel">
-      <div class="history-panel-header">History</div>
+      <div class="history-panel-header">
+        <span>History</span>
+        <button id="clear-history-btn">Clear</button>
+      </div>
       <div id="history-list"></div>
     </div>
   </div>
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>

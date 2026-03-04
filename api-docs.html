@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestCalc API Documentation</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+      color: #3b4151;
+      line-height: 1.5;
+    }
+
+    .topbar {
+      background: #1b1b1b;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar h1 {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .topbar .version {
+      background: #49cc90;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .info-section {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+
+    .info-section h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #3b4151;
+    }
+
+    .info-section p {
+      color: #6b6b6b;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    .info-section .base-url {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    .info-section .base-url code {
+      background: #e8e8e8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #3b4151;
+    }
+
+    .endpoints {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      padding: 0 24px;
+    }
+
+    .tag-group {
+      margin-bottom: 24px;
+    }
+
+    .tag-header {
+      font-size: 20px;
+      font-weight: 700;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 8px;
+      color: #3b4151;
+    }
+
+    .endpoint {
+      border: 1px solid #d8dde7;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .endpoint-summary {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      cursor: pointer;
+      gap: 12px;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .endpoint-summary:hover {
+      background: #f5f5f5;
+    }
+
+    .endpoint.open .endpoint-summary {
+      border-bottom: 1px solid #d8dde7;
+    }
+
+    .method-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 3px;
+      min-width: 60px;
+      text-align: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .method-get { background: #61affe; }
+    .method-post { background: #49cc90; }
+    .method-delete { background: #f93e3e; }
+
+    .endpoint.bg-get { background: #ebf3fb; border-color: #61affe; }
+    .endpoint.bg-post { background: #e8f6f0; border-color: #49cc90; }
+    .endpoint.bg-delete { background: #fce8e8; border-color: #f93e3e; }
+
+    .endpoint-path {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: #3b4151;
+    }
+
+    .endpoint-desc {
+      font-size: 13px;
+      color: #6b6b6b;
+      margin-left: auto;
+    }
+
+    .endpoint-chevron {
+      font-size: 12px;
+      color: #888;
+      transition: transform 0.2s;
+    }
+
+    .endpoint.open .endpoint-chevron {
+      transform: rotate(180deg);
+    }
+
+    .endpoint-details {
+      display: none;
+      padding: 16px 20px;
+      background: #fff;
+    }
+
+    .endpoint.open .endpoint-details {
+      display: block;
+    }
+
+    .detail-section {
+      margin-bottom: 16px;
+    }
+
+    .detail-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-section h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b4151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .params-table th {
+      text-align: left;
+      padding: 6px 10px;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      font-weight: 600;
+    }
+
+    .params-table td {
+      padding: 6px 10px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .params-table code {
+      background: #e8e8e8;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .required-badge {
+      color: #f93e3e;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    pre.json-block {
+      background: #1b1b1b;
+      color: #d4d4d4;
+      padding: 14px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .response-code {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-right: 8px;
+      color: #fff;
+    }
+
+    .response-code.code-200 { background: #49cc90; }
+    .response-code.code-400 { background: #fca130; }
+    .response-code.code-401 { background: #f93e3e; }
+    .response-code.code-404 { background: #9012fe; }
+
+    .response-item {
+      margin-bottom: 12px;
+    }
+
+    .response-item p {
+      font-size: 13px;
+      color: #6b6b6b;
+      margin: 4px 0 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>TestCalc API</h1>
+    <span class="version">v1.0.0</span>
+  </div>
+
+  <div class="info-section">
+    <h2>TestCalc REST API</h2>
+    <p>Backend API for the TestCalc calculator application. Provides authentication, calculation, and history management endpoints.</p>
+    <div class="base-url">Base URL: <code>https://api.testcalc.local/v1</code></div>
+  </div>
+
+  <div class="endpoints">
+
+    <!-- Auth -->
+    <div class="tag-group">
+      <div class="tag-header">Authentication</div>
+
+      <div class="endpoint bg-post" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/login</span>
+          <span class="endpoint-desc">Authenticate user</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "username": "alice",
+  "password": "password123"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Successful login
+              <pre class="json-block">{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "usr_a1b2c3",
+    "username": "alice",
+    "createdAt": "2024-01-15T08:30:00Z"
+  }
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Invalid credentials
+              <pre class="json-block">{
+  "error": "INVALID_CREDENTIALS",
+  "message": "Invalid username or password"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint bg-post" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/logout</span>
+          <span class="endpoint-desc">End session</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr>
+                <td><code>Authorization</code></td>
+                <td>header</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Successfully logged out
+              <pre class="json-block">{
+  "message": "Session ended"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Not authenticated
+              <pre class="json-block">{
+  "error": "UNAUTHORIZED",
+  "message": "No valid session"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="tag-group">
+      <div class="tag-header">History</div>
+
+      <div class="endpoint bg-get" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/users/{userId}/history</span>
+          <span class="endpoint-desc">Get calculation history</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr>
+                <td><code>userId</code></td>
+                <td>path</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+              <tr>
+                <td><code>Authorization</code></td>
+                <td>header</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+              <tr>
+                <td><code>limit</code></td>
+                <td>query</td>
+                <td>integer</td>
+                <td>optional</td>
+              </tr>
+              <tr>
+                <td><code>offset</code></td>
+                <td>query</td>
+                <td>integer</td>
+                <td>optional</td>
+              </tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> History entries
+              <pre class="json-block">{
+  "userId": "usr_a1b2c3",
+  "entries": [
+    {
+      "id": "calc_x7y8z9",
+      "expression": "5 + 3",
+      "result": "8",
+      "timestamp": "2024-06-10T14:22:00Z"
+    },
+    {
+      "id": "calc_m4n5o6",
+      "expression": "12 &times; 4",
+      "result": "48",
+      "timestamp": "2024-06-10T14:23:15Z"
+    }
+  ],
+  "total": 2,
+  "limit": 50,
+  "offset": 0
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Not authenticated
+              <pre class="json-block">{
+  "error": "UNAUTHORIZED",
+  "message": "Authentication required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint bg-delete" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-delete">DELETE</span>
+          <span class="endpoint-path">/api/users/{userId}/history</span>
+          <span class="endpoint-desc">Clear calculation history</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr>
+                <td><code>userId</code></td>
+                <td>path</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+              <tr>
+                <td><code>Authorization</code></td>
+                <td>header</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> History cleared
+              <pre class="json-block">{
+  "message": "History cleared",
+  "deletedCount": 15
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Not authenticated
+              <pre class="json-block">{
+  "error": "UNAUTHORIZED",
+  "message": "Authentication required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculate -->
+    <div class="tag-group">
+      <div class="tag-header">Calculator</div>
+
+      <div class="endpoint bg-post" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/calculate</span>
+          <span class="endpoint-desc">Perform calculation</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr>
+                <td><code>Authorization</code></td>
+                <td>header</td>
+                <td>string</td>
+                <td>optional</td>
+              </tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "expression": "5 + 3 * 2"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Calculation result
+              <pre class="json-block">{
+  "expression": "5 + 3 * 2",
+  "result": "11",
+  "precision": "float64",
+  "savedToHistory": true
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid expression
+              <pre class="json-block">{
+  "error": "INVALID_EXPRESSION",
+  "message": "Malformed expression: unmatched parenthesis"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint bg-get" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/calculate/validate</span>
+          <span class="endpoint-desc">Validate expression</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr>
+                <td><code>expression</code></td>
+                <td>query</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Validation result
+              <pre class="json-block">{
+  "expression": "5 + 3",
+  "valid": true,
+  "tokens": ["5", "+", "3"],
+  "warnings": []
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Invalid expression
+              <pre class="json-block">{
+  "expression": "5 + + 3",
+  "valid": false,
+  "tokens": null,
+  "warnings": ["Consecutive operators at position 4"]
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Missing expression parameter
+              <pre class="json-block">{
+  "error": "MISSING_PARAMETER",
+  "message": "Query parameter 'expression' is required"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    function toggleEndpoint(summaryEl) {
+      const endpoint = summaryEl.closest('.endpoint');
+      endpoint.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

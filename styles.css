@@ -17,6 +17,17 @@ body {
   gap: 16px;
 }
 
+/* Guest indicator */
+#guest-indicator {
+  background: #fff3cd;
+  color: #856404;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
 /* Login bar */
 #login-bar {
   background: #fff;
@@ -83,6 +94,21 @@ body {
   min-height: 1em;
 }
 
+#api-docs-link {
+  font-size: 13px;
+  color: #3b6fd4;
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid #d4ddef;
+  border-radius: 8px;
+  margin-left: auto;
+  transition: background 0.15s;
+}
+
+#api-docs-link:hover {
+  background: #e8edf4;
+}
+
 #logged-in-info span {
   font-size: 14px;
   color: #555;
@@ -123,6 +149,27 @@ body {
   color: #555;
   border-bottom: 1px solid #eee;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#clear-history-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+#clear-history-btn:hover {
+  background: #fce4e4;
+  color: #c0392b;
+  border-color: #f5cccc;
 }
 
 #history-list {

@@ -91,9 +91,9 @@
       </thead>
       <tbody>
 
-        <!-- TC-041 -->
+        <!-- DEF-041 -->
         <tr class="defect-row" data-target="detail-041">
-          <td>TC-041</td>
+          <td>DEF-041</td>
           <td>Login button unresponsive after idle timeout</td>
           <td><span class="pill pill-open">Open</span></td>
           <td><span class="pill pill-p3">P3</span></td>
@@ -120,9 +120,9 @@
           </td>
         </tr>
 
-        <!-- TC-055 -->
+        <!-- DEF-055 -->
         <tr class="defect-row" data-target="detail-055">
-          <td>TC-055</td>
+          <td>DEF-055</td>
           <td>Signup form submits on Enter key in username field</td>
           <td><span class="pill pill-fixed">Fixed</span></td>
           <td><span class="pill pill-p3">P3</span></td>
@@ -142,9 +142,9 @@
           </td>
         </tr>
 
-        <!-- TC-078 -->
+        <!-- DEF-078 -->
         <tr class="defect-row" data-target="detail-078">
-          <td>TC-078</td>
+          <td>DEF-078</td>
           <td>History panel scroll jumps to top on new entry</td>
           <td><span class="pill pill-open">Open</span></td>
           <td><span class="pill pill-p4">P4</span></td>
@@ -165,9 +165,9 @@
           </td>
         </tr>
 
-        <!-- TC-092 -->
+        <!-- DEF-092 -->
         <tr class="defect-row" data-target="detail-092">
-          <td>TC-092</td>
+          <td>DEF-092</td>
           <td>Cleared history entries reappear after panel refresh</td>
           <td><span class="pill pill-inprogress">In Progress</span></td>
           <td><span class="pill pill-p1">P1</span></td>
@@ -199,9 +199,9 @@
           </td>
         </tr>
 
-        <!-- TC-103 -->
+        <!-- DEF-103 -->
         <tr class="defect-row" data-target="detail-103">
-          <td>TC-103</td>
+          <td>DEF-103</td>
           <td>Display truncates results exceeding 15 digits</td>
           <td><span class="pill pill-fixed">Fixed</span></td>
           <td><span class="pill pill-p2">P2</span></td>
@@ -221,9 +221,9 @@
           </td>
         </tr>
 
-        <!-- TC-112 -->
+        <!-- DEF-112 -->
         <tr class="defect-row" data-target="detail-112">
-          <td>TC-112</td>
+          <td>DEF-112</td>
           <td>Signup accepts invalid email format</td>
           <td><span class="pill pill-fixed">Fixed</span></td>
           <td><span class="pill pill-p3">P3</span></td>
@@ -244,9 +244,9 @@
           </td>
         </tr>
 
-        <!-- TC-127 -->
+        <!-- DEF-127 -->
         <tr class="defect-row" data-target="detail-127">
-          <td>TC-127</td>
+          <td>DEF-127</td>
           <td>Double decimal point accepted in numeric input</td>
           <td><span class="pill pill-fixed">Fixed</span></td>
           <td><span class="pill pill-p2">P2</span></td>
@@ -279,9 +279,9 @@
           </td>
         </tr>
 
-        <!-- TC-134 -->
+        <!-- DEF-134 -->
         <tr class="defect-row" data-target="detail-134">
-          <td>TC-134</td>
+          <td>DEF-134</td>
           <td>Memory indicator persists after user logout</td>
           <td><span class="pill pill-open">Open</span></td>
           <td><span class="pill pill-p2">P2</span></td>
@@ -307,9 +307,9 @@
           </td>
         </tr>
 
-        <!-- TC-148 -->
+        <!-- DEF-148 -->
         <tr class="defect-row" data-target="detail-148">
-          <td>TC-148</td>
+          <td>DEF-148</td>
           <td>Equals key (=) does not trigger calculation</td>
           <td><span class="pill pill-wontfix">Won't Fix</span></td>
           <td><span class="pill pill-p4">P4</span></td>
@@ -319,27 +319,76 @@
         <tr class="detail-panel" id="detail-148">
           <td colspan="6">
             <div class="detail-content">
-              <p class="meta-line">Reporter: Cristian R. &middot; Filed: Jan 4, 2026 &middot; Resolved by: dev-sarah</p>
+              <p class="meta-line">Reporter: Cristian R. &middot; Filed: Jan 4, 2026 &middot; Resolved by: dev-sarah &middot; <strong>14 comments</strong></p>
               <h4>Description</h4>
               <p>Pressing the <kbd>=</kbd> key on the keyboard does not evaluate the expression. Only the <kbd>Enter</kbd> key works.</p>
-              <div class="resolution">
-                <span class="label">Resolution (Won't Fix):</span> Intentional behavior. The Enter key is the standard keyboard shortcut for equals in calculator applications. The = key is not mapped to avoid conflicts with other potential keyboard shortcuts. Closing as Won't Fix.
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 6, 2026</span><br>
+                Works on my machine. Tested in Chrome 121 on macOS. Pressed = key, calculation evaluated fine. Are you sure you're not pressing Shift+= or something? Closing as Cannot Reproduce.
+              </div>
+              <div class="comment">
+                <span class="author">Cristian R.</span> <span style="color:#aaa;font-size:11px;">— Jan 7, 2026</span><br>
+                I am pressing the = key. Just the = key. The one between the - key and the Backspace key. It does not work. I have tried Chrome, Firefox, and Edge. Reopening.
+              </div>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 8, 2026</span><br>
+                Just tried again on three different browsers. Cannot reproduce. The = key triggers the equals operation every time. Can you record a screen capture? Also what OS are you on? This might be a keyboard layout issue.
+              </div>
+              <div class="comment">
+                <span class="author">Cristian R.</span> <span style="color:#aaa;font-size:11px;">— Jan 9, 2026</span><br>
+                Windows 11, Romanian Standard keyboard layout. But the = key sends the = character — I can type it in the username field just fine. It only doesn't work as a calculator shortcut. I attached a screen recording to the ticket (see TCALC-148-recording.mp4).
+              </div>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 10, 2026</span><br>
+                I watched the recording. Interesting — you're right, it doesn't fire. But I still can't repo on my end. Let me look at the code... OK I see the keyboard handler. It maps Enter to equals. I don't see a mapping for =. But it works on my machine so maybe my browser is doing something extra? Let me check.
+              </div>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 11, 2026</span><br>
+                Update: I was testing with a browser extension (CalcKeys Pro) that adds keyboard shortcuts to web pages. That's why it worked for me. I disabled it, and now I can confirm: the = key does NOT trigger equals. The code only checks for 'Enter'. My bad.<br><br>
+                However — I still think this is working as intended. The Enter key is the universal "submit/confirm" key. Every OS calculator uses Enter. We don't need = as well.
               </div>
               <div class="comment">
                 <span class="author">Cristian R.</span> <span style="color:#aaa;font-size:11px;">— Jan 12, 2026</span><br>
-                Most calculator apps support both Enter and =. Reopening for discussion.
+                So you agree it's broken, but you think it's intentional? The = key is literally printed on the calculator button. It says "=". Not "Enter". The button says "=".
+              </div>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 13, 2026</span><br>
+                The <em>button</em> works. The keyboard shortcut is Enter. These are two different things. We can't map every symbol that appears on a button to a keyboard shortcut. Should we also map "÷" on the keyboard? Nobody has a ÷ key. We have to draw the line somewhere.
+              </div>
+              <div class="comment">
+                <span class="author">Cristian R.</span> <span style="color:#aaa;font-size:11px;">— Jan 14, 2026</span><br>
+                People DO have an = key. That is the difference. The = key exists on every keyboard in the world. The ÷ key does not. This is not a reasonable comparison.
+              </div>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 15, 2026</span><br>
+                I checked 5 web calculator apps. 3 of them don't support = as a keyboard shortcut. So it's not a universal expectation. Also, mapping = could conflict with future features — what if we add an equation editor or formula mode? The = character has semantic meaning beyond "evaluate."
+              </div>
+              <div class="comment">
+                <span class="author">Cristian R.</span> <span style="color:#aaa;font-size:11px;">— Jan 16, 2026</span><br>
+                We are not building an equation editor. We are building a calculator. The 2 apps that DO support = include Windows Calculator and Google Calculator, which are probably the two most-used calculators on earth. Also I checked your 3 apps and one of them is a mortgage calculator, one requires Flash Player, and one is a 404 page.
+              </div>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 17, 2026</span><br>
+                OK fair point on the mortgage calculator. But the architectural concern stands. Adding a single keymap is a slippery slope. Today it's =, tomorrow someone wants ^ for exponent, then ! for factorial. We need a keyboard shortcut RFC process before we start adding ad hoc mappings. I'm going to bring this up at sprint retro.
+              </div>
+              <div class="comment">
+                <span class="author">Cristian R.</span> <span style="color:#aaa;font-size:11px;">— Jan 18, 2026</span><br>
+                It is one line of code.
               </div>
               <div class="comment">
                 <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Jan 19, 2026</span><br>
-                Discussed in sprint retro. Team consensus is Enter-only. Closing again.
+                Discussed in sprint retro. Team consensus is Enter-only for now. We'll revisit when the keyboard shortcut RFC is drafted (targeting Q3). Closing as Won't Fix.
+              </div>
+              <div class="resolution">
+                <span class="label">Resolution (Won't Fix):</span> Intentional behavior per team consensus. The Enter key is the designated keyboard shortcut for equals. The = key is not mapped pending a keyboard shortcut RFC process (Q3 2026). See sprint retro notes 2026-01-19.
               </div>
             </div>
           </td>
         </tr>
 
-        <!-- TC-156 -->
+        <!-- DEF-156 -->
         <tr class="defect-row" data-target="detail-156">
-          <td>TC-156</td>
+          <td>DEF-156</td>
           <td>Percent button produces unexpected output in chained context</td>
           <td><span class="pill pill-open">Open</span></td>
           <td><span class="pill pill-p3">P3</span></td>
@@ -370,9 +419,9 @@
           </td>
         </tr>
 
-        <!-- TC-167 -->
+        <!-- DEF-167 -->
         <tr class="defect-row" data-target="detail-167">
-          <td>TC-167</td>
+          <td>DEF-167</td>
           <td>Guest calculations recorded under authenticated user account</td>
           <td><span class="pill pill-open">Open</span></td>
           <td><span class="pill pill-p2">P2</span></td>
@@ -398,9 +447,9 @@
           </td>
         </tr>
 
-        <!-- TC-198 -->
+        <!-- DEF-198 -->
         <tr class="defect-row" data-target="detail-198">
-          <td>TC-198</td>
+          <td>DEF-198</td>
           <td>Expression display shows stale text after clearing calculator</td>
           <td><span class="pill pill-open">Open</span></td>
           <td><span class="pill pill-p3">P3</span></td>

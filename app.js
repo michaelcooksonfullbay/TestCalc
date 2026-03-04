@@ -351,6 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // BUG: no email validation at all — accepts any string
 
+      if (!document.getElementById('eula-agree').checked) {
+        signupError.textContent = 'You must agree to the EULA to create an account';
+        return;
+      }
+
       if (USERS[username]) {
         signupError.textContent = 'Username already taken';
         return;

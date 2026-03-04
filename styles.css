@@ -491,3 +491,47 @@ button:focus-visible {
 #signup-submit:hover {
   background: #2f5bb8;
 }
+
+#eula-text {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 12px;
+  padding: 12px;
+  background: #f9f9fb;
+  margin-top: 12px;
+  line-height: 1.5;
+  color: #444;
+}
+
+#eula-text h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e1e2e;
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+#eula-text h4:first-child {
+  margin-top: 0;
+}
+
+#eula-text p,
+#eula-text ul {
+  margin-bottom: 6px;
+}
+
+#eula-text ul {
+  padding-left: 18px;
+}
+
+#eula-agree-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #555;
+}

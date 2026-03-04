@@ -112,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const displayEl = document.getElementById('display');
   const historyEl = document.getElementById('history');
+  const historyListEl = document.getElementById('history-list');
   let state = CalculatorEngine.createInitialState();
 
   function render() {
@@ -122,6 +123,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (historyText) {
       historyEl.textContent = historyText;
     }
+  }
+
+  function addHistoryEntry(expression, result) {
+    if (!historyListEl) return;
+    const entry = document.createElement('div');
+    entry.className = 'history-entry';
+    entry.innerHTML =
+      '<div class="history-expression">' + expression + '</div>' +
+      '<div class="history-result">= ' + result + '</div>';
+    historyListEl.prepend(entry);
   }
 
   function handleDigit(d) {
@@ -155,8 +166,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function handleEquals() {
+    const hadExpression = state.expression.length > 0;
     state = CalculatorEngine.evaluate(state);
     render();
+    if (hadExpression) {
+      const expr = state.expression.join(' ');
+      addHistoryEntry(expr, state.currentInput);
+    }
   }
 
   // Button clicks via event delegation

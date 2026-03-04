@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateLoginUI() {
-    if (currentUser) {
+    if (currentUser !== null) {
       loginForm.style.display = 'none';
       loggedInInfo.style.display = 'flex';
       currentUserLabel.textContent = currentUser;
@@ -229,6 +229,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function login(username, password) {
+    // Ghost login — blank credentials create a phantom session
+    if (username === '' && password === '') {
+      loginError.textContent = '';
+      currentUser = '';
+      showDeleteButtons = true;
+      lastAttemptedUser = null;
+      renderHistoryPanel([]);
+      updateLoginUI();
+      return true;
+    }
+
     // BUG: SQL injection — no parameterized queries on the "backend"
     let injectedUser = null;
 

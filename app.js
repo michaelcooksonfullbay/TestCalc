@@ -314,11 +314,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!user || user.password !== e.data.password) {
           response = { status: 401, body: { error: 'INVALID_CREDENTIALS', message: 'Invalid username or password' } };
         } else {
+          // Actually log in on the main page
+          login(e.data.username, e.data.password);
           response = { status: 200, body: { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(e.data.username), user: { id: 'usr_' + e.data.username, username: e.data.username, createdAt: '2024-01-15T08:30:00Z' } } };
         }
         break;
       }
       case 'auth-logout': {
+        // Actually log out on the main page
+        logout();
         response = { status: 200, body: { message: 'Session ended' } };
         break;
       }

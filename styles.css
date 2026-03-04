@@ -111,7 +111,7 @@ body {
   min-height: 1em;
 }
 
-#api-docs-link {
+#test-report-link {
   font-size: 13px;
   color: #3b6fd4;
   text-decoration: none;
@@ -119,6 +119,20 @@ body {
   border: 1px solid #d4ddef;
   border-radius: 8px;
   margin-left: auto;
+  transition: background 0.15s;
+}
+
+#test-report-link:hover {
+  background: #e8edf4;
+}
+
+#api-docs-link {
+  font-size: 13px;
+  color: #3b6fd4;
+  text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid #d4ddef;
+  border-radius: 8px;
   transition: background 0.15s;
 }
 

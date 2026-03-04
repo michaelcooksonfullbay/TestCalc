@@ -55,7 +55,6 @@ body {
 #history-list {
   padding: 8px 0;
   overflow-y: auto;
-  flex: 1;
 }
 
 #history-list:empty::after {

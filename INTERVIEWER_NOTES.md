@@ -4,7 +4,7 @@
 
 ## Overview
 
-TestCalc contains **8 intentionally planted bugs** across functional, UX, edge-case, and keyboard categories. A strong candidate should find 5–6 in 30–45 minutes. An exceptional candidate will find 7–8 and articulate root causes.
+TestCalc contains **10 intentionally planted bugs** across functional, UX, edge-case, keyboard, and history-panel categories. A strong candidate should find 6–7 in 30–45 minutes. An exceptional candidate will find 8–10 and articulate root causes.
 
 ---
 
@@ -90,25 +90,47 @@ TestCalc contains **8 intentionally planted bugs** across functional, UX, edge-c
 - **Fix:** Add `else if (e.key === '=') handleEquals();` to the keyboard handler.
 - **Discussion:** Keyboard discoverability, user expectations, and the difference between `Enter` and `=`. Ask about how they'd test keyboard support systematically.
 
+### Bug 9: DEL after equals desyncs the display from the history panel
+
+- **Category:** History panel / State desync (multi-step)
+- **Location:** Interaction between `deleteLast()` and `addHistoryEntry()` in `app.js`
+- **Reproduce:** Type `1`, `2`, `+`, `3`, `=` (display: `15`, history panel entry: `= 15`). Press `DEL`. Display changes to `1`, but the history panel still shows `= 15`.
+- **Expected:** The history panel and display should be consistent — either DEL is ignored after evaluation, or the history entry is updated/removed.
+- **Actual:** The history entry is created once on `=` and never updated. DEL mutates the display (Bug 4), but the panel retains the original result. Worse: pressing an operator after DEL starts a new expression using the mangled value `1`, while the panel still claims the result was `15`.
+- **Fix:** Either prevent DEL after evaluation (fixes Bug 4 too), or remove/update the most recent history entry when the result is modified.
+- **Discussion:** This is a **compound bug** — it requires discovering Bug 4 first, then checking whether the history panel reflects the change. Tests the candidate's ability to think about state consistency across multiple UI surfaces. Ask: "If you fixed Bug 4, would this bug also be fixed?" (Yes — it's a cascading fix.)
+
+### Bug 10: History panel silently clips old entries — no scrolling
+
+- **Category:** UX / History panel / Accessibility
+- **Location:** `#history-list` in `styles.css`
+- **Reproduce:** Perform 10+ calculations so the entries exceed the panel's visible height. Scroll down to see earlier entries — you can't. They are clipped and inaccessible.
+- **Expected:** The history list should scroll to reveal older entries.
+- **Actual:** The `#history-list` element has `overflow-y: auto` but no constrained height (missing `flex: 1`). It grows to fit content, and the parent `#history-panel` clips it with `overflow: hidden; max-height: 480px`. The scrollbar never appears because the list element itself is never "overflowing" — it's the *parent* that overflows. Earlier entries are silently lost to the user.
+- **Fix:** Add `flex: 1` to `#history-list` so it fills the available space within the panel and triggers its own scrollbar.
+- **Discussion:** This is a CSS layout bug disguised as a missing feature. The developer clearly *intended* scrolling (`overflow-y: auto` is present) but made a flex sizing mistake. Ask the candidate: "The CSS says `overflow-y: auto` — why doesn't it scroll?" Strong candidates will inspect the element and identify the missing flex sizing. Also discuss: is silent data loss worse than a visible error?
+
 ---
 
 ## Scoring Guide
 
 | Bugs Found | Assessment |
 |------------|------------|
-| 1–2 | Below expectations — candidate only tested happy paths |
-| 3–4 | Meets minimum — found obvious bugs but missed subtleties |
-| 5–6 | Strong — good exploratory testing instincts |
-| 7–8 | Exceptional — thorough, systematic, and detail-oriented |
+| 1–3 | Below expectations — candidate only tested happy paths |
+| 4–5 | Meets minimum — found obvious bugs but missed subtleties |
+| 6–7 | Strong — good exploratory testing instincts |
+| 8–10 | Exceptional — thorough, systematic, and detail-oriented |
 
 ### Bonus discussion points
 
 - **Does the candidate test with keyboard?** Many will only click buttons.
 - **Do they check the history line?** Bug 5 and Bug 7 require attention to the secondary display.
-- **Do they test state transitions?** Bugs 4 and 7 involve post-operation state.
-- **Can they articulate root causes?** E.g., Bug 6 is IEEE 754, Bug 5 is a UI rendering flaw vs. engine flaw.
-- **Do they assess severity accurately?** Bug 3 (Infinity) is worse than Bug 2 (-0) in terms of user impact.
+- **Do they check the history panel?** Bugs 9 and 10 require attention to the side panel after multi-step interactions.
+- **Do they test state transitions?** Bugs 4, 7, and 9 involve post-operation state.
+- **Can they articulate root causes?** E.g., Bug 6 is IEEE 754, Bug 5 is a UI rendering flaw, Bug 10 is a CSS flex sizing mistake.
+- **Do they assess severity accurately?** Bug 3 (Infinity) is worse than Bug 2 (-0) in terms of user impact. Bug 10 is silent data loss.
 - **Do they use the test harness?** Candidates who open `test.html` and use it to verify hypotheses show strong technical testing skills.
+- **Do they identify compound bugs?** Bug 9 requires finding Bug 4 first, then checking cross-surface consistency.
 
 ### Follow-up questions
 

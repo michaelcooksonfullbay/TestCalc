@@ -115,6 +115,11 @@ const USERS = {
 
 let currentUser = null;
 let lastAttemptedUser = null;
+let lastDeletedItem = {};
+
+function generateId() {
+  return 'calc_' + Math.random().toString(36).slice(2, 8);
+}
 
 // UI — only initializes when the calculator element exists
 document.addEventListener('DOMContentLoaded', () => {
@@ -153,34 +158,39 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderHistoryPanel(entries) {
     if (!historyListEl) return;
     historyListEl.innerHTML = '';
-    entries.forEach(({ expression, result }) => {
+    entries.forEach(({ id, expression, result }) => {
       const entry = document.createElement('div');
       entry.className = 'history-entry';
+      if (id) entry.dataset.entryId = id;
       entry.innerHTML =
         '<div class="history-expression">' + expression + '</div>' +
-        '<div class="history-result">= ' + result + '</div>';
+        '<div class="history-result">= ' + result + '</div>' +
+        (currentUser && id ? '<button class="history-delete-btn" title="Delete">&times;</button>' : '');
       historyListEl.prepend(entry);
     });
   }
 
   function addHistoryEntry(expression, result) {
     if (!historyListEl) return;
+    const id = generateId();
 
     // Save to user's history if logged in
     if (currentUser && USERS[currentUser]) {
-      USERS[currentUser].history.push({ expression, result });
+      USERS[currentUser].history.push({ id, expression, result });
     }
 
     // BUG: guest calculations leak to last attempted user's history
     if (!currentUser && lastAttemptedUser && USERS[lastAttemptedUser]) {
-      USERS[lastAttemptedUser].history.push({ expression, result });
+      USERS[lastAttemptedUser].history.push({ id, expression, result });
     }
 
     const entry = document.createElement('div');
     entry.className = 'history-entry';
+    if (currentUser) entry.dataset.entryId = id;
     entry.innerHTML =
       '<div class="history-expression">' + expression + '</div>' +
-      '<div class="history-result">= ' + result + '</div>';
+      '<div class="history-result">= ' + result + '</div>' +
+      (currentUser ? '<button class="history-delete-btn" title="Delete">&times;</button>' : '');
     historyListEl.prepend(entry);
   }
 
@@ -216,6 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
     loginError.textContent = '';
     currentUser = username;
     lastAttemptedUser = null;
+    // BUG: resurrect last deleted item on login
+    if (lastDeletedItem[username]) {
+      user.history.push(lastDeletedItem[username]);
+      lastDeletedItem[username] = null;
+    }
     renderHistoryPanel(user.history);
     updateLoginUI();
     return true;
@@ -257,19 +272,181 @@ document.addEventListener('DOMContentLoaded', () => {
   if (refreshHistoryBtn) {
     refreshHistoryBtn.addEventListener('click', () => {
       if (currentUser && USERS[currentUser]) {
+        // BUG: resurrect last deleted item on refresh
+        if (lastDeletedItem[currentUser]) {
+          USERS[currentUser].history.push(lastDeletedItem[currentUser]);
+          lastDeletedItem[currentUser] = null;
+        }
         renderHistoryPanel(USERS[currentUser].history);
       }
     });
   }
 
-  // Listen for history entries from API docs page
+  // Delete button on history entries (event delegation)
+  if (historyListEl) {
+    historyListEl.addEventListener('click', (e) => {
+      const deleteBtn = e.target.closest('.history-delete-btn');
+      if (!deleteBtn) return;
+      const entryEl = deleteBtn.closest('.history-entry');
+      const entryId = entryEl.dataset.entryId;
+      if (currentUser && USERS[currentUser] && entryId) {
+        const idx = USERS[currentUser].history.findIndex(h => h.id === entryId);
+        if (idx !== -1) {
+          const [removed] = USERS[currentUser].history.splice(idx, 1);
+          // BUG: save last deleted item — it will resurrect on refresh/re-login
+          lastDeletedItem[currentUser] = removed;
+        }
+      }
+      entryEl.remove();
+    });
+  }
+
+  // API docs BroadcastChannel — acts as a request/response server
   const channel = new BroadcastChannel('testcalc');
   channel.addEventListener('message', (e) => {
-    if (e.data && e.data.type === 'add-history') {
-      const { userId, expression, result } = e.data;
-      if (USERS[userId]) {
-        USERS[userId].history.push({ expression, result });
+    if (!e.data || !e.data.requestId) return;
+    const { type, requestId } = e.data;
+    let response;
+
+    switch (type) {
+      case 'auth-login': {
+        const user = USERS[e.data.username];
+        if (!user || user.password !== e.data.password) {
+          response = { status: 401, body: { error: 'INVALID_CREDENTIALS', message: 'Invalid username or password' } };
+        } else {
+          response = { status: 200, body: { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(e.data.username), user: { id: 'usr_' + e.data.username, username: e.data.username, createdAt: '2024-01-15T08:30:00Z' } } };
+        }
+        break;
       }
+      case 'auth-logout': {
+        response = { status: 200, body: { message: 'Session ended' } };
+        break;
+      }
+      case 'get-history': {
+        const uid = e.data.userId;
+        if (!USERS[uid]) {
+          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
+        } else {
+          const all = USERS[uid].history;
+          const offset = e.data.offset || 0;
+          const limit = e.data.limit || 50;
+          const sliced = all.slice(offset, offset + limit);
+          response = { status: 200, body: { userId: uid, entries: sliced.map(h => ({ ...h, timestamp: new Date().toISOString() })), total: all.length, limit, offset } };
+        }
+        break;
+      }
+      case 'add-history': {
+        const uid = e.data.userId;
+        if (!USERS[uid]) {
+          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
+        } else {
+          const entry = { id: generateId(), expression: e.data.expression, result: e.data.result };
+          USERS[uid].history.push(entry);
+          response = { status: 201, body: { ...entry, userId: uid, timestamp: new Date().toISOString() } };
+        }
+        break;
+      }
+      case 'edit-history': {
+        const uid = e.data.userId;
+        if (!USERS[uid]) {
+          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
+        } else {
+          const entry = USERS[uid].history.find(h => h.id === e.data.entryId);
+          if (!entry) {
+            response = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'No history entry with the specified ID' } };
+          } else {
+            if (e.data.expression !== undefined) entry.expression = e.data.expression;
+            if (e.data.result !== undefined) entry.result = e.data.result;
+            response = { status: 200, body: { ...entry, userId: uid, timestamp: new Date().toISOString() } };
+          }
+        }
+        break;
+      }
+      case 'delete-history-item': {
+        const uid = e.data.userId;
+        if (!USERS[uid]) {
+          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
+        } else {
+          const idx = USERS[uid].history.findIndex(h => h.id === e.data.entryId);
+          if (idx === -1) {
+            response = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'No history entry with the specified ID' } };
+          } else {
+            const [removed] = USERS[uid].history.splice(idx, 1);
+            // BUG: save last deleted for resurrection
+            lastDeletedItem[uid] = removed;
+            response = { status: 200, body: { message: 'Entry deleted', id: removed.id } };
+          }
+        }
+        break;
+      }
+      case 'delete-all-history': {
+        const uid = e.data.userId;
+        if (!USERS[uid]) {
+          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
+        } else {
+          const count = USERS[uid].history.length;
+          USERS[uid].history.length = 0;
+          response = { status: 200, body: { message: 'History cleared', deletedCount: count } };
+        }
+        break;
+      }
+      case 'calculate': {
+        const expr = e.data.expression;
+        if (!expr) {
+          response = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Expression is required' } };
+          break;
+        }
+        const normalized = expr.replace(/×/g, '*').replace(/÷/g, '/');
+        const tokens = normalized.match(/-?\d+\.?\d*|[+\-*/]/g);
+        if (!tokens || tokens.length === 0) {
+          response = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Could not parse expression' } };
+          break;
+        }
+        let calcResult = parseFloat(tokens[0]);
+        let calcError = false;
+        for (let i = 1; i < tokens.length; i += 2) {
+          const op = tokens[i];
+          const num = parseFloat(tokens[i + 1]);
+          if (isNaN(num)) { calcError = true; break; }
+          switch (op) {
+            case '+': calcResult += num; break;
+            case '-': calcResult -= num; break;
+            case '*': calcResult *= num; break;
+            case '/': calcResult /= num; break;
+            default: calcError = true;
+          }
+        }
+        if (calcError) {
+          response = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Malformed expression' } };
+        } else {
+          response = { status: 200, body: { expression: expr, result: String(calcResult), precision: 'float64', savedToHistory: false } };
+        }
+        break;
+      }
+      case 'validate': {
+        const expr = e.data.expression;
+        if (!expr) {
+          response = { status: 400, body: { error: 'MISSING_PARAMETER', message: "Query parameter 'expression' is required" } };
+          break;
+        }
+        const normalized = expr.replace(/×/g, '*').replace(/÷/g, '/');
+        const tokens = normalized.match(/-?\d+\.?\d*|[+\-*/]/g);
+        const warnings = [];
+        if (tokens) {
+          for (let i = 0; i < tokens.length - 1; i++) {
+            if (/^[+\-*/]$/.test(tokens[i]) && /^[+\-*/]$/.test(tokens[i + 1])) {
+              warnings.push('Consecutive operators at position ' + (i + 1));
+            }
+          }
+        }
+        const valid = !!(tokens && tokens.length > 0 && warnings.length === 0);
+        response = { status: 200, body: { expression: expr, valid, tokens: valid ? tokens : null, warnings } };
+        break;
+      }
+    }
+
+    if (response) {
+      channel.postMessage({ responseId: requestId, ...response });
     }
   });
 

@@ -63,7 +63,7 @@
 <body>
   <div class="topbar">
     <h1>TestCalc Defect Tracker</h1>
-    <span class="badge">12 Issues</span>
+    <span class="badge">13 Issues</span>
     <div class="meta">
       Last synced: March 3, 2026<br>
       Source: Internal Jira
@@ -74,7 +74,7 @@
     <div class="summary-bar">
       <div class="summary-stat"><span class="count" style="color:#3b82f6;">6</span> Open</div>
       <div class="summary-stat"><span class="count" style="color:#f39c12;">1</span> In Progress</div>
-      <div class="summary-stat"><span class="count" style="color:#49cc90;">4</span> Fixed</div>
+      <div class="summary-stat"><span class="count" style="color:#49cc90;">5</span> Fixed</div>
       <div class="summary-stat"><span class="count" style="color:#95a5a6;">1</span> Won't Fix</div>
     </div>
 
@@ -443,6 +443,43 @@
                 <span class="author">dev-marcus</span> <span style="color:#aaa;font-size:11px;">— Feb 24, 2026</span><br>
                 Cannot consistently reproduce. The steps above work sometimes but not always. May be a race condition. Need more investigation.
               </div>
+            </div>
+          </td>
+        </tr>
+
+        <!-- DEF-189 -->
+        <tr class="defect-row" data-target="detail-189">
+          <td>DEF-189</td>
+          <td>Keyboard input captured by calculator while typing in login fields</td>
+          <td><span class="pill pill-fixed">Fixed</span></td>
+          <td><span class="pill pill-p2">P2</span></td>
+          <td><span class="version-tag">V1</span></td>
+          <td><span class="expand-icon">&#9656;</span></td>
+        </tr>
+        <tr class="detail-panel" id="detail-189">
+          <td colspan="6">
+            <div class="detail-content">
+              <p class="meta-line">Reporter: Cristian R. (Romania QA) &middot; Filed: Feb 20, 2026 &middot; Fixed by: frontend-team &middot; Deployed: Feb 27, 2026 (v2 only)</p>
+              <h4>Description</h4>
+              <p>When entering a password in the login form, numeric key presses are intercepted by the calculator's global keyboard handler. For example, typing the password "password123" causes '123' to appear on the calculator display. Other keyboard shortcuts (Backspace, Escape, operators) are also captured, interfering with normal text editing in the password field.</p>
+              <h4>Steps to Reproduce</h4>
+              <div class="steps">1. Open TestCalc (do not click on the calculator).
+2. Click into the Password field.
+3. Type "password123".
+4. Observe the calculator display — it now shows "123".
+5. Press Backspace to correct a typo in the password — the calculator also deletes a digit.</div>
+              <h4>Expected Result</h4>
+              <p>Keyboard input in form fields should not affect the calculator.</p>
+              <h4>Actual Result</h4>
+              <p>The global <code>document.addEventListener('keydown', ...)</code> handler does not check whether the event target is a form input. All mapped keys (digits, operators, Backspace, Escape, Enter) are captured by the calculator regardless of focus context.</p>
+              <div class="comment">
+                <span class="author">dev-sarah</span> <span style="color:#aaa;font-size:11px;">— Feb 22, 2026</span><br>
+                Good catch. The keyboard handler was added without considering focus context. Added an active element check for the password field in v2. V1 will not be patched since it's in maintenance mode.
+              </div>
+              <div class="resolution">
+                <span class="label">Resolution:</span> Added focus detection to suppress calculator keyboard shortcuts when the password input field is active. Fix deployed to v2 only.
+              </div>
+              <p class="meta-line">Note: V1 remains affected. No backport planned.</p>
             </div>
           </td>
         </tr>

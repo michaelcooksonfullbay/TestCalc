@@ -745,6 +745,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Keyboard support
   document.addEventListener('keydown', (e) => {
+    // DEF-189 fix: suppress calculator shortcuts while typing in password field
+    if (document.activeElement === passwordInput) return;
+
     if (e.key >= '0' && e.key <= '9') handleDigit(e.key);
     else if (e.key === '.') handleDecimal();
     else if (e.key === '+') handleOperator('+');

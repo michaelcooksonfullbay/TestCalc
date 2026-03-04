@@ -125,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const historyEl = document.getElementById('history');
   const historyListEl = document.getElementById('history-list');
   const clearHistoryBtn = document.getElementById('clear-history-btn');
+  const refreshHistoryBtn = document.getElementById('refresh-history-btn');
   const guestIndicator = document.getElementById('guest-indicator');
 
   // Login bar elements
@@ -251,6 +252,26 @@ document.addEventListener('DOMContentLoaded', () => {
       historyListEl.innerHTML = '';
     });
   }
+
+  // Refresh button re-renders history from stored data
+  if (refreshHistoryBtn) {
+    refreshHistoryBtn.addEventListener('click', () => {
+      if (currentUser && USERS[currentUser]) {
+        renderHistoryPanel(USERS[currentUser].history);
+      }
+    });
+  }
+
+  // Listen for history entries from API docs page
+  const channel = new BroadcastChannel('testcalc');
+  channel.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'add-history') {
+      const { userId, expression, result } = e.data;
+      if (USERS[userId]) {
+        USERS[userId].history.push({ expression, result });
+      }
+    }
+  });
 
   function handleDigit(d) {
     state = CalculatorEngine.inputDigit(state, d);

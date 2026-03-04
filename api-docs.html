@@ -250,6 +250,129 @@
       color: #6b6b6b;
       margin: 4px 0 6px;
     }
+
+    /* Try it out */
+    .try-it-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .btn-try-it {
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #49cc90;
+      border-radius: 3px;
+      background: #fff;
+      color: #49cc90;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-try-it:hover {
+      background: #49cc90;
+      color: #fff;
+    }
+
+    .try-it-form {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .try-it-form.active {
+      display: block;
+    }
+
+    .try-it-form label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #3b4151;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .try-it-form input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d8dde7;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: monospace;
+      margin-bottom: 10px;
+      outline: none;
+    }
+
+    .try-it-form input:focus {
+      border-color: #49cc90;
+    }
+
+    .try-it-form textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 1px solid #d8dde7;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: monospace;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+
+    .try-it-form textarea:focus {
+      border-color: #49cc90;
+    }
+
+    .btn-execute {
+      margin-top: 8px;
+      padding: 8px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 3px;
+      background: #49cc90;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-execute:hover {
+      background: #3dbb80;
+    }
+
+    .try-it-response {
+      display: none;
+      margin-top: 12px;
+    }
+
+    .try-it-response.active {
+      display: block;
+    }
+
+    .try-it-response h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b4151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .try-it-status {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .try-it-status.success { background: #49cc90; }
+    .try-it-status.error { background: #f93e3e; }
   </style>
 </head>
 <body>
@@ -434,6 +557,96 @@
         </div>
       </div>
 
+      <div class="endpoint bg-post" data-endpoint>
+        <div class="endpoint-summary" onclick="toggleEndpoint(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/users/{userId}/history</span>
+          <span class="endpoint-desc">Add calculation to history</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr>
+                <td><code>userId</code></td>
+                <td>path</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+              <tr>
+                <td><code>Authorization</code></td>
+                <td>header</td>
+                <td>string</td>
+                <td><span class="required-badge">required</span></td>
+              </tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "expression": "42 + 8",
+  "result": "50"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" id="try-it-form">
+              <label>userId</label>
+              <input type="text" id="try-it-userid" placeholder="alice" value="alice">
+              <label>Request Body</label>
+              <textarea id="try-it-body">{
+  "expression": "42 + 8",
+  "result": "50"
+}</textarea>
+              <button class="btn-execute" onclick="executeTryIt()">Execute</button>
+            </div>
+            <div class="try-it-response" id="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status" id="try-it-status"></span>
+              <pre class="json-block" id="try-it-response-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">201</span> Entry added
+              <pre class="json-block">{
+  "id": "calc_p1q2r3",
+  "expression": "42 + 8",
+  "result": "50",
+  "userId": "alice",
+  "timestamp": "2024-06-10T15:00:00Z"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid request body
+              <pre class="json-block">{
+  "error": "INVALID_BODY",
+  "message": "Fields 'expression' and 'result' are required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Not authenticated
+              <pre class="json-block">{
+  "error": "UNAUTHORIZED",
+  "message": "Authentication required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="endpoint bg-delete" data-endpoint>
         <div class="endpoint-summary" onclick="toggleEndpoint(this)">
           <span class="method-badge method-delete">DELETE</span>
@@ -596,9 +809,84 @@
   </div>
 
   <script>
+    const channel = new BroadcastChannel('testcalc');
+
     function toggleEndpoint(summaryEl) {
       const endpoint = summaryEl.closest('.endpoint');
       endpoint.classList.toggle('open');
+    }
+
+    function toggleTryIt(btn) {
+      const form = document.getElementById('try-it-form');
+      const isActive = form.classList.toggle('active');
+      btn.textContent = isActive ? 'Cancel' : 'Try it out';
+      if (!isActive) {
+        document.getElementById('try-it-response').classList.remove('active');
+      }
+    }
+
+    function executeTryIt() {
+      const userId = document.getElementById('try-it-userid').value.trim();
+      const bodyText = document.getElementById('try-it-body').value.trim();
+      const responseEl = document.getElementById('try-it-response');
+      const statusEl = document.getElementById('try-it-status');
+      const responseBodyEl = document.getElementById('try-it-response-body');
+
+      responseEl.classList.add('active');
+
+      if (!userId) {
+        statusEl.textContent = '404';
+        statusEl.className = 'try-it-status error';
+        responseBodyEl.textContent = JSON.stringify({
+          error: 'USER_NOT_FOUND',
+          message: 'No user with the specified ID'
+        }, null, 2);
+        return;
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(bodyText);
+      } catch (e) {
+        statusEl.textContent = '400';
+        statusEl.className = 'try-it-status error';
+        responseBodyEl.textContent = JSON.stringify({
+          error: 'INVALID_JSON',
+          message: 'Could not parse request body: ' + e.message
+        }, null, 2);
+        return;
+      }
+
+      if (!parsed.expression || !parsed.result) {
+        statusEl.textContent = '400';
+        statusEl.className = 'try-it-status error';
+        responseBodyEl.textContent = JSON.stringify({
+          error: 'INVALID_BODY',
+          message: "Fields 'expression' and 'result' are required"
+        }, null, 2);
+        return;
+      }
+
+      // Send to main app via BroadcastChannel
+      channel.postMessage({
+        type: 'add-history',
+        userId: userId,
+        expression: String(parsed.expression),
+        result: String(parsed.result)
+      });
+
+      const entryId = 'calc_' + Math.random().toString(36).slice(2, 8);
+      const timestamp = new Date().toISOString();
+
+      statusEl.textContent = '201';
+      statusEl.className = 'try-it-status success';
+      responseBodyEl.textContent = JSON.stringify({
+        id: entryId,
+        expression: parsed.expression,
+        result: parsed.result,
+        userId: userId,
+        timestamp: timestamp
+      }, null, 2);
     }
   </script>
 </body>

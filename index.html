@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TestCalc</title>
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
   <div id="guest-indicator">Guest Mode</div>
@@ -14,6 +14,7 @@
       <input type="text" id="username-input" placeholder="Username" autocomplete="off">
       <input type="password" id="password-input" placeholder="Password">
       <button id="login-btn">Login</button>
+      <button id="signup-btn">Sign Up</button>
       <span id="login-error"></span>
     </div>
     <div id="logged-in-info" style="display: none;">
@@ -63,6 +64,36 @@
       <div id="history-list"></div>
     </div>
   </div>
-  <script src="app.js?v=4"></script>
+  <!-- Signup Modal -->
+  <div id="signup-modal" style="display:none;">
+    <div id="signup-modal-content">
+      <div id="signup-modal-header">
+        <h2>Create Account</h2>
+        <button id="signup-close">&times;</button>
+      </div>
+      <div id="signup-modal-body">
+        <label>Username <span class="required">*</span></label>
+        <input type="text" id="signup-username" placeholder="Choose a username" autocomplete="off">
+        <label>Password <span class="required">*</span></label>
+        <input type="password" id="signup-password" placeholder="Choose a password">
+        <label>Email <span class="required">*</span></label>
+        <input type="text" id="signup-email" placeholder="Email address">
+        <label>Phone <span class="required">*</span></label>
+        <input type="text" id="signup-phone" placeholder="(XXX) XXX-XXXX">
+        <label>First Name <span class="required">*</span></label>
+        <input type="text" id="signup-firstname" placeholder="First name">
+        <label>Last Name <span class="required">*</span></label>
+        <input type="text" id="signup-lastname" placeholder="Last name">
+        <label>Zip Code</label>
+        <input type="text" id="signup-zipcode" placeholder="Zip code (optional)">
+        <label>Occupation</label>
+        <input type="text" id="signup-occupation" placeholder="Occupation (optional)">
+        <span id="signup-error"></span>
+        <button id="signup-submit">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=5"></script>
 </body>
 </html>

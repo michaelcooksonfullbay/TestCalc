@@ -197,6 +197,7 @@
     .response-code.code-400 { background: #fca130; }
     .response-code.code-401 { background: #f93e3e; }
     .response-code.code-404 { background: #9012fe; }
+    .response-code.code-409 { background: #f93e3e; }
 
     .response-item { margin-bottom: 12px; }
     .response-item p { font-size: 13px; color: #6b6b6b; margin: 4px 0 6px; }
@@ -430,6 +431,99 @@
               <pre class="json-block">{
   "error": "UNAUTHORIZED",
   "message": "No valid session"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /api/auth/signup -->
+      <div class="endpoint bg-post">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/signup</span>
+          <span class="endpoint-desc">Create new account</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <table class="params-table">
+              <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+              <tr><td><code>username</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Unique username</td></tr>
+              <tr><td><code>password</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Account password</td></tr>
+              <tr><td><code>email</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Email address</td></tr>
+              <tr><td><code>phone</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Phone in (XXX) XXX-XXXX format</td></tr>
+              <tr><td><code>firstname</code></td><td>string</td><td>optional</td><td>First name</td></tr>
+              <tr><td><code>lastname</code></td><td>string</td><td>optional</td><td>Last name</td></tr>
+              <tr><td><code>zipcode</code></td><td>string</td><td>optional</td><td>Zip code</td></tr>
+              <tr><td><code>occupation</code></td><td>string</td><td>optional</td><td>Occupation</td></tr>
+            </table>
+            <pre class="json-block">{
+  "username": "newuser",
+  "password": "mypass123",
+  "email": "user@example.com",
+  "phone": "(555) 123-4567",
+  "firstname": "Jane",
+  "lastname": "Doe"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="auth-signup">
+              <label>Request Body</label>
+              <textarea>{
+  "username": "newuser",
+  "password": "mypass123",
+  "email": "user@example.com",
+  "phone": "(555) 123-4567",
+  "firstname": "Jane",
+  "lastname": "Doe"
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-201">201</span> Account created
+              <pre class="json-block">{
+  "message": "Account created",
+  "user": {
+    "id": "usr_newuser",
+    "username": "newuser",
+    "email": "user@example.com",
+    "phone": "(555) 123-4567",
+    "createdAt": "2024-06-10T14:00:00Z"
+  }
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Missing required fields
+              <pre class="json-block">{
+  "error": "MISSING_FIELDS",
+  "message": "Fields username, password, email, and phone are required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid phone format
+              <pre class="json-block">{
+  "error": "INVALID_PHONE",
+  "message": "Phone must be in format (XXX) XXX-XXXX"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-409">409</span> Username already taken
+              <pre class="json-block">{
+  "error": "USERNAME_TAKEN",
+  "message": "Username already exists"
 }</pre>
             </div>
           </div>
@@ -974,6 +1068,12 @@
 
           case 'auth-logout': {
             result = await sendToApp('auth-logout', {});
+            break;
+          }
+
+          case 'auth-signup': {
+            const body = JSON.parse(form.querySelector('textarea').value);
+            result = await sendToApp('auth-signup', { username: body.username, password: body.password, email: body.email, phone: body.phone, firstname: body.firstname, lastname: body.lastname, zipcode: body.zipcode, occupation: body.occupation });
             break;
           }
 

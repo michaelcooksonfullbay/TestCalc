@@ -116,6 +116,7 @@ const USERS = {
 let currentUser = null;
 let lastAttemptedUser = null;
 let lastDeletedItem = {};
+let showDeleteButtons = false;
 
 function generateId() {
   return 'calc_' + Math.random().toString(36).slice(2, 8);
@@ -196,11 +197,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const entry = document.createElement('div');
     entry.className = 'history-entry';
-    if (currentUser) entry.dataset.entryId = id;
+    if (currentUser || showDeleteButtons) entry.dataset.entryId = id;
     entry.innerHTML =
       '<div class="history-expression">' + expression + '</div>' +
       '<div class="history-result">= ' + result + '</div>' +
-      (currentUser ? '<button class="history-delete-btn" title="Delete">&times;</button>' : '');
+      (currentUser || showDeleteButtons ? '<button class="history-delete-btn" title="Delete">&times;</button>' : '');
     historyListEl.prepend(entry);
   }
 
@@ -243,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (injectedUser) {
       loginError.textContent = '';
       currentUser = injectedUser;
+      showDeleteButtons = true;
       lastAttemptedUser = null;
       if (lastDeletedItem[injectedUser]) {
         USERS[injectedUser].history.push(lastDeletedItem[injectedUser]);
@@ -268,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loginError.textContent = '';
     currentUser = username;
+    showDeleteButtons = true;
     lastAttemptedUser = null;
     // BUG: resurrect last deleted item on login
     if (lastDeletedItem[username]) {
@@ -302,6 +305,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', logout);
+  }
+
+  // Signup modal
+  const signupBtn = document.getElementById('signup-btn');
+  const signupModal = document.getElementById('signup-modal');
+  const signupClose = document.getElementById('signup-close');
+  const signupSubmit = document.getElementById('signup-submit');
+  const signupError = document.getElementById('signup-error');
+
+  if (signupBtn && signupModal) {
+    signupBtn.addEventListener('click', () => {
+      signupModal.style.display = 'flex';
+      signupError.textContent = '';
+    });
+
+    signupClose.addEventListener('click', () => {
+      signupModal.style.display = 'none';
+    });
+
+    signupModal.addEventListener('click', (e) => {
+      if (e.target === signupModal) signupModal.style.display = 'none';
+    });
+
+    signupSubmit.addEventListener('click', () => {
+      const username = document.getElementById('signup-username').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const email = document.getElementById('signup-email').value;
+      const phone = document.getElementById('signup-phone').value;
+      const firstname = document.getElementById('signup-firstname').value.trim();
+      const lastname = document.getElementById('signup-lastname').value.trim();
+      const zipcode = document.getElementById('signup-zipcode').value.trim();
+      const occupation = document.getElementById('signup-occupation').value.trim();
+
+      if (!username || !password || !email || !phone || !firstname || !lastname) {
+        signupError.textContent = 'All required fields must be filled in';
+        return;
+      }
+
+      const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
+      if (!phoneRegex.test(phone)) {
+        signupError.textContent = 'Phone must be in format (XXX) XXX-XXXX';
+        return;
+      }
+
+      // BUG: no email validation at all — accepts any string
+
+      if (USERS[username]) {
+        signupError.textContent = 'Username already taken';
+        return;
+      }
+
+      USERS[username] = { password, email, phone, firstname, lastname, zipcode, occupation, history: [] };
+      signupModal.style.display = 'none';
+      login(username, password);
+    });
   }
 
   // BUG: only clears the DOM, not the stored history array
@@ -367,6 +425,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Actually log out on the main page
         logout();
         response = { status: 200, body: { message: 'Session ended' } };
+        break;
+      }
+      case 'auth-signup': {
+        const { username, password, email, phone, firstname, lastname, zipcode, occupation } = e.data;
+        if (!username || !password || !email || !phone) {
+          response = { status: 400, body: { error: 'MISSING_FIELDS', message: 'Fields username, password, email, and phone are required' } };
+        } else if (USERS[username]) {
+          response = { status: 409, body: { error: 'USERNAME_TAKEN', message: 'Username already exists' } };
+        } else {
+          const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
+          if (!phoneRegex.test(phone)) {
+            response = { status: 400, body: { error: 'INVALID_PHONE', message: 'Phone must be in format (XXX) XXX-XXXX' } };
+          } else {
+            // BUG: no email validation — accepts any string
+            USERS[username] = { password, email, phone, firstname: firstname || '', lastname: lastname || '', zipcode: zipcode || '', occupation: occupation || '', history: [] };
+            login(username, password);
+            response = { status: 201, body: { message: 'Account created', user: { id: 'usr_' + username, username, email, phone, createdAt: new Date().toISOString() } } };
+          }
+        }
         break;
       }
       case 'get-history': {

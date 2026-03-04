@@ -9,8 +9,6 @@
 <body>
   <div id="guest-indicator">Guest Mode</div>
   <div id="login-bar">
-    <a href="test-report.html" target="_blank" id="test-report-link">Test Report</a>
-    <a href="api-docs.html" target="_blank" id="api-docs-link">API Docs</a>
     <div id="login-form">
       <input type="text" id="username-input" placeholder="Username" autocomplete="off">
       <input type="password" id="password-input" placeholder="Password">
@@ -86,6 +84,13 @@
       </div>
       <div id="history-list"></div>
     </div>
+  </div>
+  <div id="links-bar">
+    <a href="test-report.html" target="_blank">Test Report</a>
+    <span class="links-sep">&middot;</span>
+    <a href="api-docs.html" target="_blank">API Docs</a>
+    <span class="links-sep">&middot;</span>
+    <a href="v2/index.html" class="coming-soon-link" onclick="window.open(this.href, 'testcalc-v2', 'width=1300,height=900'); return false;">v2 Coming Soon</a>
   </div>
   <!-- Signup Modal -->
   <div id="signup-modal" style="display:none;">

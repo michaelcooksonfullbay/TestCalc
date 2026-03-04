@@ -111,33 +111,29 @@ body {
   min-height: 1em;
 }
 
-#test-report-link {
+/* Links bar below app */
+#links-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
+}
+
+#links-bar a {
   color: #3b6fd4;
   text-decoration: none;
-  padding: 6px 12px;
-  border: 1px solid #d4ddef;
-  border-radius: 8px;
-  margin-left: auto;
-  transition: background 0.15s;
 }
 
-#test-report-link:hover {
-  background: #e8edf4;
+#links-bar a:hover {
+  text-decoration: underline;
 }
 
-#api-docs-link {
-  font-size: 13px;
-  color: #3b6fd4;
-  text-decoration: none;
-  padding: 6px 12px;
-  border: 1px solid #d4ddef;
-  border-radius: 8px;
-  transition: background 0.15s;
+.links-sep {
+  color: #ccc;
 }
 
-#api-docs-link:hover {
-  background: #e8edf4;
+.coming-soon-link {
+  color: #6b4dc4 !important;
 }
 
 #logged-in-info {

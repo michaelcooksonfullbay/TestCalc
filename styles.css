@@ -126,9 +126,23 @@ body {
   background: #e8edf4;
 }
 
+#logged-in-info {
+  max-width: 200px;
+  overflow: visible;
+}
+
 #logged-in-info span {
   font-size: 14px;
   color: #555;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+#logout-btn {
+  flex-shrink: 0;
+  position: relative;
+  z-index: 0;
 }
 
 #app-container {

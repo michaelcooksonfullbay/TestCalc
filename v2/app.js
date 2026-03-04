@@ -687,6 +687,12 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   }
 
+  function handlePercent() {
+    const val = parseFloat(state.currentInput) / 100;
+    state = { ...state, currentInput: String(val) };
+    render();
+  }
+
   function handleClear() {
     state = CalculatorEngine.clear();
     render();
@@ -718,6 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
       case 'delete': handleDelete(); break;
       case 'clear': handleClear(); break;
       case 'equals': handleEquals(); break;
+      case 'percent': handlePercent(); break;
       case 'memory-clear': handleMemoryClear(); break;
       case 'memory-recall': handleMemoryRecall(); break;
       case 'memory-add': handleMemoryAdd(); break;

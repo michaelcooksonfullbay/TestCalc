@@ -159,6 +159,80 @@ body {
   align-items: flex-start;
 }
 
+/* Info panel */
+#info-panel {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  width: 220px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.info-panel-header {
+  padding: 16px 20px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #555;
+  border-bottom: 1px solid #eee;
+}
+
+.info-panel-body {
+  padding: 14px 18px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.info-panel-body h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.info-panel-body h4:first-child {
+  margin-top: 0;
+}
+
+.info-panel-body p {
+  margin-bottom: 4px;
+}
+
+.info-panel-body ul {
+  padding-left: 16px;
+  margin: 4px 0 8px;
+  font-size: 12px;
+}
+
+.info-panel-body ul li {
+  padding: 1px 0;
+}
+
+.info-panel-body code {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+  font-size: 11px;
+  background: #f0f2f5;
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+.info-signoff {
+  margin-top: 14px;
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+/* Percent button — plain, blends with digit buttons */
+.btn-percent {
+  background: #f0f2f5;
+  color: #1e1e2e;
+}
+
 /* V2 glassmorphism calculator */
 #calculator {
   background: rgba(255, 255, 255, 0.85);
@@ -476,28 +550,6 @@ button:focus-visible {
 /* Wide zero button */
 .btn-wide {
   grid-column: span 2;
-}
-
-/* V2 badge */
-@keyframes badgeShimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.v2-badge {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: linear-gradient(120deg, #3b6fd4, #6b4dc4, #3b6fd4);
-  background-size: 200% 100%;
-  animation: badgeShimmer 3s ease infinite;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 12px;
-  letter-spacing: 0.5px;
-  z-index: 10;
 }
 
 /* Signup modal */

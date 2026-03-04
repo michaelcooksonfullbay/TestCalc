@@ -23,8 +23,26 @@
     </div>
   </div>
   <div id="app-container">
+    <div id="info-panel">
+      <div class="info-panel-header">v2 Requirements</div>
+      <div class="info-panel-body">
+        <h4>Calculator Memory</h4>
+        <p>Small, self-contained feature &mdash; four buttons:</p>
+        <ul>
+          <li><strong>MC</strong> &mdash; clear stored value</li>
+          <li><strong>MR</strong> &mdash; recall stored value</li>
+          <li><strong>M+</strong> &mdash; add display to memory</li>
+          <li><strong>M&minus;</strong> &mdash; subtract display from memory</li>
+        </ul>
+        <p>An <strong>M</strong> indicator appears when a value is stored.</p>
+        <h4>API</h4>
+        <p>Two new endpoints: <code>GET</code> and <code>PUT</code> on <code>/memory</code>.</p>
+        <h4>Scope</h4>
+        <p>This feature is independent of existing calculator operations. No changes to arithmetic, history, or authentication. Existing tests should not be affected.</p>
+        <p class="info-signoff">&mdash; Product Team</p>
+      </div>
+    </div>
     <div id="calculator">
-      <div class="v2-badge">v2</div>
       <div class="display">
         <div id="memory-indicator" style="display:none;">M</div>
         <div id="history" aria-live="polite"></div>
@@ -56,7 +74,8 @@
         <button data-action="digit" data-value="3" aria-label="3">3</button>
         <button class="btn-operator" data-action="operator" data-value="+" aria-label="Add">+</button>
 
-        <button class="btn-wide" data-action="digit" data-value="0" aria-label="0">0</button>
+        <button data-action="digit" data-value="0" aria-label="0">0</button>
+        <button class="btn-percent" data-action="percent" aria-label="Percent">%</button>
         <button data-action="decimal" aria-label="Decimal point">.</button>
         <button class="btn-equals" data-action="equals" aria-label="Equals">=</button>
       </div>

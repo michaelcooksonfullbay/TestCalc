@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestCalc API Documentation</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fafafa;
+      color: #3b4151;
+      line-height: 1.5;
+    }
+
+    .topbar {
+      background: #1b1b1b;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar h1 { color: #fff; font-size: 18px; font-weight: 700; }
+
+    .topbar .version {
+      background: #49cc90;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .info-section {
+      max-width: 900px;
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+
+    .info-section h2 { font-size: 28px; font-weight: 700; color: #3b4151; }
+    .info-section p { color: #6b6b6b; margin-top: 8px; font-size: 14px; }
+
+    .info-section .base-url { margin-top: 12px; font-size: 13px; color: #888; }
+    .info-section .base-url code {
+      background: #e8e8e8;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #3b4151;
+    }
+
+    .endpoints {
+      max-width: 900px;
+      margin: 0 auto 48px;
+      padding: 0 24px;
+    }
+
+    .tag-group { margin-bottom: 24px; }
+
+    .tag-header {
+      font-size: 20px;
+      font-weight: 700;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+      margin-bottom: 8px;
+      color: #3b4151;
+    }
+
+    .endpoint {
+      border: 1px solid #d8dde7;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .endpoint-summary {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      cursor: pointer;
+      gap: 12px;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .endpoint-summary:hover { background: #f5f5f5; }
+    .endpoint.open .endpoint-summary { border-bottom: 1px solid #d8dde7; }
+
+    .method-badge {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 3px;
+      min-width: 60px;
+      text-align: center;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .method-get { background: #61affe; }
+    .method-post { background: #49cc90; }
+    .method-put { background: #fca130; }
+    .method-delete { background: #f93e3e; }
+
+    .endpoint.bg-get { background: #ebf3fb; border-color: #61affe; }
+    .endpoint.bg-post { background: #e8f6f0; border-color: #49cc90; }
+    .endpoint.bg-put { background: #fef4e8; border-color: #fca130; }
+    .endpoint.bg-delete { background: #fce8e8; border-color: #f93e3e; }
+
+    .endpoint-path {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: #3b4151;
+    }
+
+    .endpoint-desc { font-size: 13px; color: #6b6b6b; margin-left: auto; }
+
+    .endpoint-chevron {
+      font-size: 12px;
+      color: #888;
+      transition: transform 0.2s;
+    }
+
+    .endpoint.open .endpoint-chevron { transform: rotate(180deg); }
+
+    .endpoint-details {
+      display: none;
+      padding: 16px 20px;
+      background: #fff;
+    }
+
+    .endpoint.open .endpoint-details { display: block; }
+
+    .detail-section { margin-bottom: 16px; }
+    .detail-section:last-child { margin-bottom: 0; }
+
+    .detail-section h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b4151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .params-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .params-table th {
+      text-align: left;
+      padding: 6px 10px;
+      background: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      font-weight: 600;
+    }
+
+    .params-table td { padding: 6px 10px; border: 1px solid #e0e0e0; }
+
+    .params-table code {
+      background: #e8e8e8;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+
+    .required-badge { color: #f93e3e; font-size: 11px; font-weight: 600; }
+
+    pre.json-block {
+      background: #1b1b1b;
+      color: #d4d4d4;
+      padding: 14px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      overflow-x: auto;
+      line-height: 1.5;
+    }
+
+    .response-code {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      margin-right: 8px;
+      color: #fff;
+    }
+
+    .response-code.code-200, .response-code.code-201 { background: #49cc90; }
+    .response-code.code-400 { background: #fca130; }
+    .response-code.code-401 { background: #f93e3e; }
+    .response-code.code-404 { background: #9012fe; }
+    .response-code.code-409 { background: #f93e3e; }
+
+    .response-item { margin-bottom: 12px; }
+    .response-item p { font-size: 13px; color: #6b6b6b; margin: 4px 0 6px; }
+
+    /* Try it out */
+    .try-it-bar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 4px;
+    }
+
+    .btn-try-it {
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #49cc90;
+      border-radius: 3px;
+      background: #fff;
+      color: #49cc90;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-try-it:hover { background: #49cc90; color: #fff; }
+    .btn-try-it.active { background: #fff; color: #f93e3e; border-color: #f93e3e; }
+    .btn-try-it.active:hover { background: #f93e3e; color: #fff; }
+
+    .try-it-form { display: none; margin-top: 8px; }
+    .try-it-form.active { display: block; }
+
+    .try-it-form label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #3b4151;
+      margin-bottom: 4px;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .try-it-form label:first-child { margin-top: 0; }
+
+    .try-it-form input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d8dde7;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: monospace;
+      outline: none;
+    }
+
+    .try-it-form input:focus { border-color: #49cc90; }
+
+    .try-it-form textarea {
+      width: 100%;
+      min-height: 90px;
+      padding: 10px 12px;
+      border: 1px solid #d8dde7;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: monospace;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+
+    .try-it-form textarea:focus { border-color: #49cc90; }
+
+    .btn-execute {
+      margin-top: 10px;
+      padding: 8px 24px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      border-radius: 3px;
+      background: #49cc90;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-execute:hover { background: #3dbb80; }
+
+    .try-it-response { display: none; margin-top: 12px; }
+    .try-it-response.active { display: block; }
+
+    .try-it-response h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3b4151;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .try-it-status {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 3px;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .try-it-status.success { background: #49cc90; }
+    .try-it-status.error { background: #f93e3e; }
+
+    .hint { font-size: 11px; color: #999; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>TestCalc API</h1>
+    <span class="version">v2.0.0</span>
+  </div>
+
+  <div class="info-section">
+    <h2>TestCalc REST API</h2>
+    <p>Backend API for the TestCalc calculator application. Provides authentication, calculation, history management, and memory endpoints.</p>
+    <div class="base-url">Base URL: <code>https://api.testcalc.local/v2</code></div>
+  </div>
+
+  <div class="endpoints">
+
+    <!-- ==================== AUTH ==================== -->
+    <div class="tag-group">
+      <div class="tag-header">Authentication</div>
+
+      <!-- POST /api/auth/login -->
+      <div class="endpoint bg-post">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/login</span>
+          <span class="endpoint-desc">Authenticate user</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "username": "alice",
+  "password": "password123"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="auth-login">
+              <label>Request Body</label>
+              <textarea>{
+  "username": "alice",
+  "password": "password123"
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Successful login
+              <pre class="json-block">{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "usr_a1b2c3",
+    "username": "alice",
+    "createdAt": "2024-01-15T08:30:00Z"
+  }
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Invalid credentials
+              <pre class="json-block">{
+  "error": "INVALID_CREDENTIALS",
+  "message": "Invalid username or password"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /api/auth/logout -->
+      <div class="endpoint bg-post">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/logout</span>
+          <span class="endpoint-desc">End session</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="auth-logout">
+              <label>Authorization Header</label>
+              <input type="text" value="Bearer eyJhbGciOiJIUzI1NiIs...">
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Successfully logged out
+              <pre class="json-block">{
+  "message": "Session ended"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Not authenticated
+              <pre class="json-block">{
+  "error": "UNAUTHORIZED",
+  "message": "No valid session"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /api/auth/signup -->
+      <div class="endpoint bg-post">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/auth/signup</span>
+          <span class="endpoint-desc">Create new account</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <table class="params-table">
+              <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+              <tr><td><code>username</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Unique username</td></tr>
+              <tr><td><code>password</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Account password</td></tr>
+              <tr><td><code>email</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Email address</td></tr>
+              <tr><td><code>phone</code></td><td>string</td><td><span class="required-badge">required</span></td><td>Phone in (XXX) XXX-XXXX format</td></tr>
+              <tr><td><code>firstname</code></td><td>string</td><td>optional</td><td>First name</td></tr>
+              <tr><td><code>lastname</code></td><td>string</td><td>optional</td><td>Last name</td></tr>
+              <tr><td><code>zipcode</code></td><td>string</td><td>optional</td><td>Zip code</td></tr>
+              <tr><td><code>occupation</code></td><td>string</td><td>optional</td><td>Occupation</td></tr>
+            </table>
+            <pre class="json-block">{
+  "username": "newuser",
+  "password": "mypass123",
+  "email": "user@example.com",
+  "phone": "(555) 123-4567",
+  "firstname": "Jane",
+  "lastname": "Doe"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="auth-signup">
+              <label>Request Body</label>
+              <textarea>{
+  "username": "newuser",
+  "password": "mypass123",
+  "email": "user@example.com",
+  "phone": "(555) 123-4567",
+  "firstname": "Jane",
+  "lastname": "Doe"
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-201">201</span> Account created
+              <pre class="json-block">{
+  "message": "Account created",
+  "user": {
+    "id": "usr_newuser",
+    "username": "newuser",
+    "email": "user@example.com",
+    "phone": "(555) 123-4567",
+    "createdAt": "2024-06-10T14:00:00Z"
+  }
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Missing required fields
+              <pre class="json-block">{
+  "error": "MISSING_FIELDS",
+  "message": "Fields username, password, email, and phone are required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid phone format
+              <pre class="json-block">{
+  "error": "INVALID_PHONE",
+  "message": "Phone must be in format (XXX) XXX-XXXX"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-409">409</span> Username already taken
+              <pre class="json-block">{
+  "error": "USERNAME_TAKEN",
+  "message": "Username already exists"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== HISTORY ==================== -->
+    <div class="tag-group">
+      <div class="tag-header">History</div>
+
+      <!-- GET /api/users/{userId}/history -->
+      <div class="endpoint bg-get">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/users/{userId}/history</span>
+          <span class="endpoint-desc">Get calculation history</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>limit</code></td><td>query</td><td>integer</td><td>optional</td></tr>
+              <tr><td><code>offset</code></td><td>query</td><td>integer</td><td>optional</td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="get-history">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <label>limit <span style="font-weight:400;text-transform:none">(optional)</span></label>
+              <input type="text" data-field="limit" placeholder="50">
+              <label>offset <span style="font-weight:400;text-transform:none">(optional)</span></label>
+              <input type="text" data-field="offset" placeholder="0">
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> History entries
+              <pre class="json-block">{
+  "userId": "alice",
+  "entries": [
+    {
+      "id": "calc_x7y8z9",
+      "expression": "5 + 3",
+      "result": "8",
+      "timestamp": "2024-06-10T14:22:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 50,
+  "offset": 0
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-401">401</span> Not authenticated
+              <pre class="json-block">{
+  "error": "UNAUTHORIZED",
+  "message": "Authentication required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST /api/users/{userId}/history -->
+      <div class="endpoint bg-post">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/users/{userId}/history</span>
+          <span class="endpoint-desc">Add calculation to history</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "expression": "42 + 8",
+  "result": "50"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="add-history">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <label>Request Body</label>
+              <textarea>{
+  "expression": "42 + 8",
+  "result": "50"
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-201">201</span> Entry added
+              <pre class="json-block">{
+  "id": "calc_p1q2r3",
+  "expression": "42 + 8",
+  "result": "50",
+  "userId": "alice",
+  "timestamp": "2024-06-10T15:00:00Z"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid request body
+              <pre class="json-block">{
+  "error": "INVALID_BODY",
+  "message": "Fields 'expression' and 'result' are required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PUT /api/users/{userId}/history/{entryId} -->
+      <div class="endpoint bg-put">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-put">PUT</span>
+          <span class="endpoint-path">/api/users/{userId}/history/{entryId}</span>
+          <span class="endpoint-desc">Edit history entry</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>entryId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "expression": "50 + 50",
+  "result": "100"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="edit-history">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <label>entryId</label>
+              <input type="text" data-field="entryId" placeholder="calc_x7y8z9">
+              <div class="hint">Use GET history to find entry IDs</div>
+              <label>Request Body</label>
+              <textarea>{
+  "expression": "50 + 50",
+  "result": "100"
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Entry updated
+              <pre class="json-block">{
+  "id": "calc_x7y8z9",
+  "expression": "50 + 50",
+  "result": "100",
+  "userId": "alice",
+  "timestamp": "2024-06-10T15:05:00Z"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid request body
+              <pre class="json-block">{
+  "error": "INVALID_BODY",
+  "message": "At least one of 'expression' or 'result' is required"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> Entry not found
+              <pre class="json-block">{
+  "error": "ENTRY_NOT_FOUND",
+  "message": "No history entry with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DELETE /api/users/{userId}/history/{entryId} -->
+      <div class="endpoint bg-delete">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-delete">DELETE</span>
+          <span class="endpoint-path">/api/users/{userId}/history/{entryId}</span>
+          <span class="endpoint-desc">Delete history entry</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>entryId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="delete-history-item">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <label>entryId</label>
+              <input type="text" data-field="entryId" placeholder="calc_x7y8z9">
+              <div class="hint">Use GET history to find entry IDs</div>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Entry deleted
+              <pre class="json-block">{
+  "message": "Entry deleted",
+  "id": "calc_x7y8z9"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> Entry not found
+              <pre class="json-block">{
+  "error": "ENTRY_NOT_FOUND",
+  "message": "No history entry with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DELETE /api/users/{userId}/history -->
+      <div class="endpoint bg-delete">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-delete">DELETE</span>
+          <span class="endpoint-path">/api/users/{userId}/history</span>
+          <span class="endpoint-desc">Clear all calculation history</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="delete-all-history">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> History cleared
+              <pre class="json-block">{
+  "message": "History cleared",
+  "deletedCount": 15
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MEMORY ==================== -->
+    <div class="tag-group">
+      <div class="tag-header">Memory</div>
+
+      <!-- GET /api/users/{userId}/memory -->
+      <div class="endpoint bg-get">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/users/{userId}/memory</span>
+          <span class="endpoint-desc">Get user memory value</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="get-memory">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Memory value
+              <pre class="json-block">{
+  "userId": "alice",
+  "value": 0
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PUT /api/users/{userId}/memory -->
+      <div class="endpoint bg-put">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-put">PUT</span>
+          <span class="endpoint-path">/api/users/{userId}/memory</span>
+          <span class="endpoint-desc">Update user memory value</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>userId</code></td><td>path</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <table class="params-table">
+              <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+              <tr><td><code>operation</code></td><td>string</td><td><span class="required-badge">required</span></td><td>One of: <code>add</code>, <code>subtract</code>, <code>set</code>, <code>clear</code></td></tr>
+              <tr><td><code>value</code></td><td>number</td><td>optional</td><td>Value to use with operation (ignored for <code>clear</code>)</td></tr>
+            </table>
+            <pre class="json-block">{
+  "operation": "set",
+  "value": 42
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="update-memory">
+              <label>userId</label>
+              <input type="text" data-field="userId" placeholder="alice" value="alice">
+              <label>Request Body</label>
+              <textarea>{
+  "operation": "set",
+  "value": 42
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Memory updated
+              <pre class="json-block">{
+  "userId": "alice",
+  "value": 42,
+  "operation": "set"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid operation
+              <pre class="json-block">{
+  "error": "INVALID_OPERATION",
+  "message": "Operation must be add, subtract, set, or clear"
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-404">404</span> User not found
+              <pre class="json-block">{
+  "error": "USER_NOT_FOUND",
+  "message": "No user with the specified ID"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CALCULATOR ==================== -->
+    <div class="tag-group">
+      <div class="tag-header">Calculator</div>
+
+      <!-- POST /api/calculate -->
+      <div class="endpoint bg-post">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-post">POST</span>
+          <span class="endpoint-path">/api/calculate</span>
+          <span class="endpoint-desc">Perform calculation</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>Authorization</code></td><td>header</td><td>string</td><td>optional</td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <h4>Request Body</h4>
+            <pre class="json-block">{
+  "expression": "5 + 3 * 2"
+}</pre>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="calculate">
+              <label>Request Body</label>
+              <textarea>{
+  "expression": "5 + 3 * 2"
+}</textarea>
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Calculation result
+              <pre class="json-block">{
+  "expression": "5 + 3 * 2",
+  "result": "11",
+  "precision": "float64",
+  "savedToHistory": true
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Invalid expression
+              <pre class="json-block">{
+  "error": "INVALID_EXPRESSION",
+  "message": "Malformed expression: unmatched parenthesis"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GET /api/calculate/validate -->
+      <div class="endpoint bg-get">
+        <div class="endpoint-summary" onclick="toggle(this)">
+          <span class="method-badge method-get">GET</span>
+          <span class="endpoint-path">/api/calculate/validate</span>
+          <span class="endpoint-desc">Validate expression</span>
+          <span class="endpoint-chevron">&#9660;</span>
+        </div>
+        <div class="endpoint-details">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            <table class="params-table">
+              <tr><th>Name</th><th>Location</th><th>Type</th><th>Required</th></tr>
+              <tr><td><code>expression</code></td><td>query</td><td>string</td><td><span class="required-badge">required</span></td></tr>
+            </table>
+          </div>
+          <div class="detail-section">
+            <div class="try-it-bar">
+              <button class="btn-try-it" onclick="toggleTryIt(this)">Try it out</button>
+            </div>
+            <div class="try-it-form" data-action="validate">
+              <label>expression</label>
+              <input type="text" data-field="expression" placeholder="5 + 3" value="5 + 3">
+              <button class="btn-execute" onclick="exec(this)">Execute</button>
+            </div>
+            <div class="try-it-response">
+              <h4>Server Response</h4>
+              <span class="try-it-status"></span>
+              <pre class="json-block try-it-body"></pre>
+            </div>
+          </div>
+          <div class="detail-section">
+            <h4>Responses</h4>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Validation result
+              <pre class="json-block">{
+  "expression": "5 + 3",
+  "valid": true,
+  "tokens": ["5", "+", "3"],
+  "warnings": []
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-200">200</span> Invalid expression
+              <pre class="json-block">{
+  "expression": "5 + + 3",
+  "valid": false,
+  "tokens": null,
+  "warnings": ["Consecutive operators at position 4"]
+}</pre>
+            </div>
+            <div class="response-item">
+              <span class="response-code code-400">400</span> Missing expression parameter
+              <pre class="json-block">{
+  "error": "MISSING_PARAMETER",
+  "message": "Query parameter 'expression' is required"
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const channel = new BroadcastChannel('testcalc-v2');
+    const pending = {};
+
+    // Listen for responses from the main app
+    channel.addEventListener('message', (e) => {
+      if (e.data && e.data.responseId && pending[e.data.responseId]) {
+        pending[e.data.responseId](e.data);
+        delete pending[e.data.responseId];
+      }
+    });
+
+    function sendToApp(type, data) {
+      return new Promise((resolve) => {
+        const requestId = 'req_' + Math.random().toString(36).slice(2);
+        pending[requestId] = resolve;
+        channel.postMessage({ type, requestId, ...data });
+        setTimeout(() => {
+          if (pending[requestId]) {
+            delete pending[requestId];
+            resolve({ status: 503, body: { error: 'SERVICE_UNAVAILABLE', message: 'Calculator app is not open. Open the main page in another tab first.' } });
+          }
+        }, 2000);
+      });
+    }
+
+    function toggle(el) {
+      el.closest('.endpoint').classList.toggle('open');
+    }
+
+    function toggleTryIt(btn) {
+      const section = btn.closest('.detail-section');
+      const form = section.querySelector('.try-it-form');
+      const isActive = form.classList.toggle('active');
+      btn.textContent = isActive ? 'Cancel' : 'Try it out';
+      btn.classList.toggle('active', isActive);
+      if (!isActive) {
+        section.querySelector('.try-it-response').classList.remove('active');
+      }
+    }
+
+    async function exec(btn) {
+      const section = btn.closest('.detail-section');
+      const form = section.querySelector('.try-it-form');
+      const responseDiv = section.querySelector('.try-it-response');
+      const statusEl = responseDiv.querySelector('.try-it-status');
+      const bodyEl = responseDiv.querySelector('.try-it-body');
+      const action = form.dataset.action;
+
+      responseDiv.classList.add('active');
+      statusEl.textContent = '...';
+      statusEl.className = 'try-it-status';
+      bodyEl.textContent = 'Loading...';
+
+      let result;
+
+      try {
+        switch (action) {
+
+          case 'auth-login': {
+            const body = JSON.parse(form.querySelector('textarea').value);
+            result = await sendToApp('auth-login', { username: body.username, password: body.password });
+            break;
+          }
+
+          case 'auth-logout': {
+            result = await sendToApp('auth-logout', {});
+            break;
+          }
+
+          case 'auth-signup': {
+            const body = JSON.parse(form.querySelector('textarea').value);
+            result = await sendToApp('auth-signup', { username: body.username, password: body.password, email: body.email, phone: body.phone, firstname: body.firstname, lastname: body.lastname, zipcode: body.zipcode, occupation: body.occupation });
+            break;
+          }
+
+          case 'get-history': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            const limit = parseInt(form.querySelector('[data-field="limit"]').value) || undefined;
+            const offset = parseInt(form.querySelector('[data-field="offset"]').value) || undefined;
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            result = await sendToApp('get-history', { userId, limit, offset });
+            break;
+          }
+
+          case 'add-history': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            const body = JSON.parse(form.querySelector('textarea').value);
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            if (!body.expression || !body.result) { result = { status: 400, body: { error: 'INVALID_BODY', message: "Fields 'expression' and 'result' are required" } }; break; }
+            result = await sendToApp('add-history', { userId, expression: String(body.expression), result: String(body.result) });
+            break;
+          }
+
+          case 'edit-history': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            const entryId = form.querySelector('[data-field="entryId"]').value.trim();
+            const body = JSON.parse(form.querySelector('textarea').value);
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            if (!entryId) { result = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'entryId is required' } }; break; }
+            if (!body.expression && !body.result) { result = { status: 400, body: { error: 'INVALID_BODY', message: "At least one of 'expression' or 'result' is required" } }; break; }
+            result = await sendToApp('edit-history', { userId, entryId, expression: body.expression, result: body.result });
+            break;
+          }
+
+          case 'delete-history-item': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            const entryId = form.querySelector('[data-field="entryId"]').value.trim();
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            if (!entryId) { result = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'entryId is required' } }; break; }
+            result = await sendToApp('delete-history-item', { userId, entryId });
+            break;
+          }
+
+          case 'delete-all-history': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            result = await sendToApp('delete-all-history', { userId });
+            break;
+          }
+
+          case 'calculate': {
+            const body = JSON.parse(form.querySelector('textarea').value);
+            if (!body.expression) { result = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Expression is required' } }; break; }
+            result = await sendToApp('calculate', { expression: body.expression });
+            break;
+          }
+
+          case 'validate': {
+            const expression = form.querySelector('[data-field="expression"]').value.trim();
+            if (!expression) { result = { status: 400, body: { error: 'MISSING_PARAMETER', message: "Query parameter 'expression' is required" } }; break; }
+            result = await sendToApp('validate', { expression });
+            break;
+          }
+
+          case 'get-memory': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            result = await sendToApp('get-memory', { userId });
+            break;
+          }
+
+          case 'update-memory': {
+            const userId = form.querySelector('[data-field="userId"]').value.trim();
+            const body = JSON.parse(form.querySelector('textarea').value);
+            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
+            if (!body.operation) { result = { status: 400, body: { error: 'INVALID_OPERATION', message: 'Operation must be add, subtract, set, or clear' } }; break; }
+            result = await sendToApp('update-memory', { userId, operation: body.operation, value: body.value });
+            break;
+          }
+        }
+      } catch (e) {
+        statusEl.textContent = '400';
+        statusEl.className = 'try-it-status error';
+        bodyEl.textContent = JSON.stringify({ error: 'INVALID_JSON', message: e.message }, null, 2);
+        return;
+      }
+
+      statusEl.textContent = result.status;
+      statusEl.className = 'try-it-status ' + (result.status < 400 ? 'success' : 'error');
+      bodyEl.textContent = JSON.stringify(result.body, null, 2);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TestCalc v2</title>
+  <link rel="stylesheet" href="styles.css?v=6">
+</head>
+<body>
+  <div id="guest-indicator">Guest Mode</div>
+  <div id="login-bar">
+    <a href="api-docs.html" target="_blank" id="api-docs-link">API Docs</a>
+    <div id="login-form">
+      <input type="text" id="username-input" placeholder="Username" autocomplete="off">
+      <input type="password" id="password-input" placeholder="Password">
+      <button id="login-btn">Login</button>
+      <button id="signup-btn">Sign Up</button>
+      <span id="login-error"></span>
+    </div>
+    <div id="logged-in-info" style="display: none;">
+      <span>Logged in as <strong id="current-user-label"></strong></span>
+      <button id="logout-btn">Logout</button>
+    </div>
+  </div>
+  <div id="app-container">
+    <div id="calculator">
+      <div class="v2-badge">v2</div>
+      <div class="display">
+        <div id="memory-indicator" style="display:none;">M</div>
+        <div id="history" aria-live="polite"></div>
+        <div id="display" aria-live="polite">0</div>
+      </div>
+      <div class="buttons">
+        <button class="btn-memory" data-action="memory-clear" aria-label="Memory Clear">MC</button>
+        <button class="btn-memory" data-action="memory-recall" aria-label="Memory Recall">MR</button>
+        <button class="btn-memory" data-action="memory-add" aria-label="Memory Add">M+</button>
+        <button class="btn-memory" data-action="memory-subtract" aria-label="Memory Subtract">M-</button>
+
+        <button class="btn-function" data-action="clear" aria-label="Clear">C</button>
+        <button class="btn-function" data-action="delete" aria-label="Delete">DEL</button>
+        <button class="btn-function" data-action="toggle-sign" aria-label="Toggle sign">+/-</button>
+        <button class="btn-operator" data-action="operator" data-value="÷" aria-label="Divide">÷</button>
+
+        <button data-action="digit" data-value="7" aria-label="7">7</button>
+        <button data-action="digit" data-value="8" aria-label="8">8</button>
+        <button data-action="digit" data-value="9" aria-label="9">9</button>
+        <button class="btn-operator" data-action="operator" data-value="×" aria-label="Multiply">×</button>
+
+        <button data-action="digit" data-value="4" aria-label="4">4</button>
+        <button data-action="digit" data-value="5" aria-label="5">5</button>
+        <button data-action="digit" data-value="6" aria-label="6">6</button>
+        <button class="btn-operator" data-action="operator" data-value="-" aria-label="Subtract">-</button>
+
+        <button data-action="digit" data-value="1" aria-label="1">1</button>
+        <button data-action="digit" data-value="2" aria-label="2">2</button>
+        <button data-action="digit" data-value="3" aria-label="3">3</button>
+        <button class="btn-operator" data-action="operator" data-value="+" aria-label="Add">+</button>
+
+        <button class="btn-wide" data-action="digit" data-value="0" aria-label="0">0</button>
+        <button data-action="decimal" aria-label="Decimal point">.</button>
+        <button class="btn-equals" data-action="equals" aria-label="Equals">=</button>
+      </div>
+    </div>
+
+    <div id="history-panel">
+      <div class="history-panel-header">
+        <span>History</span>
+        <button id="refresh-history-btn" title="Refresh">&#8635;</button>
+        <button id="clear-history-btn">Clear</button>
+      </div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+  <!-- Signup Modal -->
+  <div id="signup-modal" style="display:none;">
+    <div id="signup-modal-content">
+      <div id="signup-modal-header">
+        <h2>Create Account</h2>
+        <button id="signup-close">&times;</button>
+      </div>
+      <div id="signup-modal-body">
+        <label>Username <span class="required">*</span></label>
+        <input type="text" id="signup-username" placeholder="Choose a username" autocomplete="off">
+        <label>Password <span class="required">*</span></label>
+        <input type="password" id="signup-password" placeholder="Choose a password">
+        <label>Email <span class="required">*</span></label>
+        <input type="text" id="signup-email" placeholder="Email address">
+        <label>Phone <span class="required">*</span></label>
+        <input type="text" id="signup-phone" placeholder="(XXX) XXX-XXXX">
+        <label>First Name <span class="required">*</span></label>
+        <input type="text" id="signup-firstname" placeholder="First name">
+        <label>Last Name <span class="required">*</span></label>
+        <input type="text" id="signup-lastname" placeholder="Last name">
+        <label>Zip Code</label>
+        <input type="text" id="signup-zipcode" placeholder="Zip code (optional)">
+        <label>Occupation</label>
+        <input type="text" id="signup-occupation" placeholder="Occupation (optional)">
+        <div id="eula-text">
+          <h4>1. Acceptance of Terms</h4>
+          <p>By clicking "Create Account," you acknowledge that you have read, understood, and agreed to be bound by these Terms. If you do not agree, please close this window, clear your browser history, and reconsider your life choices.</p>
+
+          <h4>2. License Grant</h4>
+          <p>We grant you a non-exclusive, non-transferable, non-refundable, and mildly amusing license to use TestCalc for basic arithmetic operations. This license does not extend to advanced mathematics, existential equations, or attempts to divide by zero.</p>
+
+          <h4>3. User Obligations</h4>
+          <ul>
+            <li>You agree to verify all calculations before using them for interplanetary navigation, sourdough baking ratios, or tax filings.</li>
+            <li>You shall press the "=" button with confidence and conviction.</li>
+            <li>You agree to engage in respectful discourse with the DEL key and not blame it for your mistakes.</li>
+          </ul>
+
+          <h4>4. Data Collection</h4>
+          <p>We collect your username solely for the purpose of whispering it wistfully during server maintenance windows. No other personal data will be harvested, sold, or used to train sentient calculators.</p>
+
+          <h4>5. Limitation of Liability</h4>
+          <p>TestCalc makes no guarantee that 1 + 1 will always equal 2 under all cosmic conditions. We are not liable for any damages arising from floating-point arithmetic, rounding errors, or the heat death of the universe.</p>
+
+          <h4>6. Firstborn Contribution Clause</h4>
+          <p>By creating an account, you pledge your firstborn child to a 7-year apprenticeship in our imaginary salt mines. The apprenticeship includes:</p>
+          <ul>
+            <li>Complimentary pickaxe safety training</li>
+            <li>Dramatic torch-lighting ceremonies</li>
+            <li>One commemorative tunic (non-refundable)</li>
+            <li>Reasonable hydration breaks</li>
+            <li>An annual birthday acknowledgment (card not guaranteed)</li>
+          </ul>
+
+          <h4>7. Termination</h4>
+          <p>The Company reserves the right to terminate your account at any time, for any reason, including but not limited to: "vibes-based assessment," excessive use of the number 7, or failure to appreciate the beauty of long division.</p>
+
+          <h4>8. Governing Law</h4>
+          <p>These Terms shall be governed by the laws of pure mathematics and common decency. Any disputes shall be resolved by a council of abacus enthusiasts in a neutral timezone.</p>
+
+          <h4>9. Memory &amp; Calculation Tracking Disclosure</h4>
+          <p>By using TestCalc v2, you acknowledge that your calculations may now be "remembered" in ways both expected and mysterious. The Company reserves the right to store, recall, add to, or subtract from your memories at any time and without prior notice.</p>
+          <ul>
+            <li>Memory values may persist beyond the boundaries of your session, your account, and possibly your mortal comprehension.</li>
+            <li>The "MC" (Memory Clear) button clears only your local memory. It does not clear the Company's memory. The Company remembers everything.</li>
+            <li>Use of the M+, M-, and MR buttons constitutes implicit consent to having your numerical preferences analyzed, categorized, and occasionally judged.</li>
+            <li>The Company is not responsible for any existential dread caused by discovering that your memory value is not what you expected.</li>
+          </ul>
+
+          <h4>10. Version Upgrade Acknowledgment</h4>
+          <p>By using TestCalc v2, you acknowledge the following:</p>
+          <ul>
+            <li>You are using a "new and improved" version of TestCalc. The definitions of "new" and "improved" are left as an exercise for the user.</li>
+            <li>All bugs present in v1 are now classified as "legacy features" and are preserved for historical authenticity and backwards compatibility.</li>
+            <li>Any resemblance between TestCalc v2 and a fully functional calculator is purely coincidental and should not be relied upon.</li>
+            <li>The v2 badge visible on the calculator interface is cosmetic and does not imply any warranty of enhanced functionality.</li>
+            <li>You waive the right to compare v2 unfavorably with v1, v0, or any hypothetical v3 that may or may not exist in a parallel dimension.</li>
+          </ul>
+        </div>
+        <label id="eula-agree-label"><input type="checkbox" id="eula-agree"> I have read and agree to the Terms of Service and EULA</label>
+        <span id="signup-error"></span>
+        <button id="signup-submit">Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=6"></script>
+</body>
+</html>

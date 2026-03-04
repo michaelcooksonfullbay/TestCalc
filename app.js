@@ -105,6 +105,16 @@ const CalculatorEngine = (() => {
   };
 })();
 
+// Hardcoded users with per-user history
+const USERS = {
+  alice:   { password: 'password123', history: [] },
+  bob:     { password: 'testpass',    history: [] },
+  charlie: { password: 'calc2024',    history: [] },
+  diana:   { password: 'qwerty',      history: [] },
+};
+
+let currentUser = null;
+
 // UI — only initializes when the calculator element exists
 document.addEventListener('DOMContentLoaded', () => {
   const calculatorEl = document.getElementById('calculator');
@@ -113,6 +123,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const displayEl = document.getElementById('display');
   const historyEl = document.getElementById('history');
   const historyListEl = document.getElementById('history-list');
+
+  // Login bar elements
+  const loginForm = document.getElementById('login-form');
+  const loggedInInfo = document.getElementById('logged-in-info');
+  const usernameInput = document.getElementById('username-input');
+  const passwordInput = document.getElementById('password-input');
+  const loginBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const loginError = document.getElementById('login-error');
+  const currentUserLabel = document.getElementById('current-user-label');
+
   let state = CalculatorEngine.createInitialState();
 
   function render() {
@@ -125,14 +146,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function renderHistoryPanel(entries) {
+    if (!historyListEl) return;
+    historyListEl.innerHTML = '';
+    entries.forEach(({ expression, result }) => {
+      const entry = document.createElement('div');
+      entry.className = 'history-entry';
+      entry.innerHTML =
+        '<div class="history-expression">' + expression + '</div>' +
+        '<div class="history-result">= ' + result + '</div>';
+      historyListEl.prepend(entry);
+    });
+  }
+
   function addHistoryEntry(expression, result) {
     if (!historyListEl) return;
+
+    // Save to user's history if logged in
+    if (currentUser && USERS[currentUser]) {
+      USERS[currentUser].history.push({ expression, result });
+    }
+
     const entry = document.createElement('div');
     entry.className = 'history-entry';
     entry.innerHTML =
       '<div class="history-expression">' + expression + '</div>' +
       '<div class="history-result">= ' + result + '</div>';
     historyListEl.prepend(entry);
+  }
+
+  function updateLoginUI() {
+    if (currentUser) {
+      loginForm.style.display = 'none';
+      loggedInInfo.style.display = 'flex';
+      currentUserLabel.textContent = currentUser;
+    } else {
+      loginForm.style.display = 'flex';
+      loggedInInfo.style.display = 'none';
+      usernameInput.value = '';
+      passwordInput.value = '';
+      loginError.textContent = '';
+    }
+  }
+
+  function login(username, password) {
+    const user = USERS[username];
+    if (!user || user.password !== password) {
+      loginError.textContent = 'Invalid username or password';
+      return false;
+    }
+    loginError.textContent = '';
+    currentUser = username;
+    renderHistoryPanel(user.history);
+    updateLoginUI();
+    return true;
+  }
+
+  function logout() {
+    currentUser = null;
+    renderHistoryPanel([]);
+    updateLoginUI();
+  }
+
+  // Login bar event handlers
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      login(usernameInput.value.trim(), passwordInput.value);
+    });
+  }
+
+  if (passwordInput) {
+    passwordInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        login(usernameInput.value.trim(), passwordInput.value);
+      }
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', logout);
   }
 
   function handleDigit(d) {
@@ -209,4 +301,5 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   render();
+  updateLoginUI();
 });

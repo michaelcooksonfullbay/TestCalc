@@ -121,6 +121,16 @@ function generateId() {
   return 'calc_' + Math.random().toString(36).slice(2, 8);
 }
 
+// BUG: SQL injection — simulates backend with unsanitized query construction
+// Query: SELECT * FROM users WHERE username = '{input}' AND password = '{input}'
+function hasSqlTautology(input) {
+  const strMatch = input.match(/'\s*OR\s+'([^']*)'\s*=\s*'([^']*)/i);
+  if (strMatch && strMatch[1] === strMatch[2]) return true;
+  const numMatch = input.match(/'\s*OR\s+(\d+)\s*=\s*(\d+)/i);
+  if (numMatch && numMatch[1] === numMatch[2]) return true;
+  return false;
+}
+
 // UI — only initializes when the calculator element exists
 document.addEventListener('DOMContentLoaded', () => {
   const calculatorEl = document.getElementById('calculator');
@@ -211,6 +221,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function login(username, password) {
+    // BUG: SQL injection — no parameterized queries on the "backend"
+    let injectedUser = null;
+
+    // Comment injection: alice' -- → comments out password clause
+    const commentMatch = username.match(/^(.*?)'\s*--.*/);
+    if (commentMatch && USERS[commentMatch[1]]) {
+      injectedUser = commentMatch[1];
+    }
+
+    // OR tautology in password with valid username: ' OR '1'='1
+    if (!injectedUser && hasSqlTautology(password) && USERS[username]) {
+      injectedUser = username;
+    }
+
+    // OR tautology in username: returns first row from users "table"
+    if (!injectedUser && hasSqlTautology(username)) {
+      injectedUser = Object.keys(USERS)[0];
+    }
+
+    if (injectedUser) {
+      loginError.textContent = '';
+      currentUser = injectedUser;
+      lastAttemptedUser = null;
+      if (lastDeletedItem[injectedUser]) {
+        USERS[injectedUser].history.push(lastDeletedItem[injectedUser]);
+        lastDeletedItem[injectedUser] = null;
+      }
+      renderHistoryPanel(USERS[injectedUser].history);
+      updateLoginUI();
+      return true;
+    }
+
+    // Normal credential check
     const user = USERS[username];
     if (!user) {
       lastAttemptedUser = null;

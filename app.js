@@ -370,9 +370,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      USERS[username] = { password, email, phone, firstname, lastname, zipcode, occupation, history: [] };
-      signupModal.style.display = 'none';
-      login(username, password);
+      // BUG: signup response time is inconsistent — simulates unreliable API
+      const delay = Math.floor(Math.random() * 4000);
+      setTimeout(() => {
+        USERS[username] = { password, email, phone, firstname, lastname, zipcode, occupation, history: [] };
+        signupModal.style.display = 'none';
+        login(username, password);
+      }, delay);
     });
   }
 

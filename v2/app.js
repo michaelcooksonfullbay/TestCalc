@@ -762,4 +762,49 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
   updateLoginUI();
   updateMemoryIndicator();
+
+  // ── Mobile tab bar ──
+  (function () {
+    var tabBar = document.getElementById('mobile-tab-bar');
+    if (!tabBar) return;
+
+    var tabs = tabBar.querySelectorAll('.tab-btn');
+    var panels = {
+      calculator: document.getElementById('calculator'),
+      history: document.getElementById('history-panel'),
+      info: document.getElementById('info-panel')
+    };
+
+    function isMobile() {
+      return window.matchMedia('(max-width: 600px)').matches;
+    }
+
+    function setActiveTab(name) {
+      tabs.forEach(function (t) {
+        t.classList.toggle('active', t.dataset.tab === name);
+      });
+      Object.keys(panels).forEach(function (key) {
+        panels[key].classList.toggle('mobile-active', key === name);
+      });
+    }
+
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        setActiveTab(tab.dataset.tab);
+      });
+    });
+
+    if (isMobile()) setActiveTab('calculator');
+
+    window.addEventListener('resize', function () {
+      if (!isMobile()) {
+        Object.keys(panels).forEach(function (key) {
+          panels[key].classList.remove('mobile-active');
+        });
+      } else {
+        var active = tabBar.querySelector('.tab-btn.active');
+        setActiveTab(active ? active.dataset.tab : 'calculator');
+      }
+    });
+  })();
 });

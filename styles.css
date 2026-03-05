@@ -241,6 +241,11 @@ body {
   color: #333;
 }
 
+.creds-table td:last-child {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .info-footnote {
   margin-top: 12px;
   font-size: 12px;
@@ -644,4 +649,129 @@ button:focus-visible {
   font-size: 13px;
   cursor: pointer;
   color: #555;
+}
+
+/* ── Mobile tab bar (hidden on desktop) ── */
+#mobile-tab-bar {
+  display: none;
+}
+
+/* ── Mobile responsive layout ── */
+@media (max-width: 600px) {
+  body {
+    justify-content: flex-start;
+    padding: 8px;
+    padding-bottom: 64px;
+    min-height: 100vh;
+    gap: 8px;
+  }
+
+  /* Login bar */
+  #login-bar {
+    width: 100%;
+    padding: 8px 12px;
+  }
+
+  #login-form {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  #login-bar input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  #login-btn,
+  #signup-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  #login-error {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* App container: stack vertically */
+  #app-container {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  /* All panels full width */
+  #calculator,
+  #info-panel,
+  #history-panel {
+    width: 100% !important;
+    max-width: 100%;
+    flex-shrink: 1;
+  }
+
+  /* Hide panels by default on mobile — JS adds .mobile-active */
+  #info-panel { display: none; }
+  #calculator { display: none; }
+  #history-panel { display: none; }
+
+  #info-panel.mobile-active { display: block; }
+  #calculator.mobile-active { display: block; }
+  #history-panel.mobile-active { display: flex; flex-direction: column; max-height: none; }
+
+  /* History panel takes available height on mobile */
+  #history-panel.mobile-active #history-list {
+    max-height: calc(100vh - 200px);
+  }
+
+  /* Links bar */
+  #links-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Tab bar */
+  #mobile-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    z-index: 999;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 10px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    background: transparent;
+    color: #888;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .tab-btn.active {
+    background: #3b6fd4;
+    color: #fff;
+  }
+
+  /* Signup modal responsive */
+  #signup-modal-content {
+    width: 95vw;
+    max-width: 380px;
+  }
+
+  /* Guest indicator */
+  #guest-indicator {
+    font-size: 12px;
+    padding: 3px 10px;
+  }
 }

@@ -202,6 +202,15 @@ document.addEventListener('DOMContentLoaded', () => {
       USERS[lastAttemptedUser].history.push({ id, expression, result });
     }
 
+    // Persist to DB (fire-and-forget)
+    if (currentUser) {
+      fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUser, expression, result }),
+      }).catch(() => {});
+    }
+
     const entry = document.createElement('div');
     entry.className = 'history-entry';
     if (currentUser || showDeleteButtons) entry.dataset.entryId = id;
@@ -297,7 +306,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     renderHistoryPanel(user.history);
     updateLoginUI();
+    // Load recent history from DB
+    loadDbHistory(username);
     return true;
+  }
+
+  function loadDbHistory(userId) {
+    fetch('/api/history?userId=' + encodeURIComponent(userId))
+      .then(res => res.json())
+      .then(data => {
+        if (data.items && data.items.length > 0) {
+          const recent = data.items.slice(0, 20);
+          renderHistoryPanel(recent);
+          // Append "View All History" link
+          if (historyListEl) {
+            const link = document.createElement('a');
+            link.href = '/history.html';
+            link.textContent = 'View All History';
+            link.className = 'view-all-history-link';
+            link.target = '_blank';
+            historyListEl.appendChild(link);
+          }
+        }
+      })
+      .catch(() => {});
   }
 
   function logout() {

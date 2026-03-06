@@ -8,3 +8,5 @@ playwright-report
 .dockerignore
 Dockerfile
 deploy.sh
+lambda-history
+scripts

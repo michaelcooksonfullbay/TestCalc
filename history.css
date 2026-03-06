@@ -1,0 +1,133 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+header {
+  background: #16213e;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #0f3460;
+}
+
+header h1 {
+  font-size: 1.4rem;
+  color: #e94560;
+}
+
+header nav a {
+  color: #a0a0c0;
+  text-decoration: none;
+  margin-left: 1.5rem;
+  font-size: 0.9rem;
+}
+
+header nav a:hover {
+  color: #e94560;
+}
+
+main {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+/* Grid.js dark theme overrides */
+.gridjs-wrapper {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.gridjs-table {
+  background: #16213e;
+}
+
+.gridjs-thead th {
+  background: #0f3460 !important;
+  color: #e0e0e0 !important;
+  border-color: #1a1a2e !important;
+}
+
+.gridjs-tbody td {
+  background: #16213e !important;
+  color: #e0e0e0 !important;
+  border-color: #1a1a2e !important;
+}
+
+.gridjs-tbody tr:hover td {
+  background: #1a2a4e !important;
+}
+
+.gridjs-footer {
+  background: #0f3460 !important;
+  border-color: #1a1a2e !important;
+  color: #e0e0e0 !important;
+}
+
+.gridjs-pagination .gridjs-pages button {
+  background: #16213e !important;
+  color: #e0e0e0 !important;
+  border-color: #0f3460 !important;
+}
+
+.gridjs-pagination .gridjs-pages button:hover {
+  background: #1a2a4e !important;
+}
+
+.gridjs-pagination .gridjs-pages button.gridjs-currentPage {
+  background: #e94560 !important;
+  color: #fff !important;
+}
+
+.gridjs-search {
+  margin-bottom: 0;
+}
+
+.gridjs-search input {
+  background: #16213e !important;
+  color: #e0e0e0 !important;
+  border-color: #0f3460 !important;
+  border-radius: 4px;
+}
+
+.gridjs-head {
+  background: transparent !important;
+}
+
+.gridjs-summary {
+  color: #a0a0c0 !important;
+}
+
+.gridjs-notfound {
+  background: #16213e !important;
+  color: #a0a0c0 !important;
+}
+
+.gridjs-loading {
+  color: #e0e0e0 !important;
+}
+
+.delete-btn {
+  background: none;
+  border: 1px solid #e94560;
+  color: #e94560;
+  padding: 2px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.delete-btn:hover {
+  background: #e94560;
+  color: #fff;
+}

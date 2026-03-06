@@ -22,3 +22,13 @@ output "lambda_function_url" {
   description = "Lambda function URL"
   value       = aws_lambda_function_url.runner.function_url
 }
+
+output "history_lambda_function_url" {
+  description = "History Lambda function URL"
+  value       = aws_lambda_function_url.history.function_url
+}
+
+output "dynamodb_table_name" {
+  description = "DynamoDB history table name"
+  value       = aws_dynamodb_table.history.name
+}

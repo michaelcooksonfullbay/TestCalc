@@ -64,6 +64,24 @@ resource "aws_cloudfront_origin_request_policy" "api" {
   }
 }
 
+# Origin request policy for History API (forward query strings + content-type)
+resource "aws_cloudfront_origin_request_policy" "history_api" {
+  name = "${var.project_name}-history-api-origin-request"
+
+  cookies_config {
+    cookie_behavior = "none"
+  }
+  headers_config {
+    header_behavior = "whitelist"
+    headers {
+      items = ["Origin", "Content-Type", "Accept"]
+    }
+  }
+  query_strings_config {
+    query_string_behavior = "all"
+  }
+}
+
 # CloudFront Function to rewrite /dir/ to /dir/index.html
 resource "aws_cloudfront_function" "rewrite_uri" {
   name    = "${var.project_name}-rewrite-uri"
@@ -94,7 +112,7 @@ resource "aws_cloudfront_distribution" "main" {
     origin_access_control_id = aws_cloudfront_origin_access_control.s3.id
   }
 
-  # Lambda Origin (API)
+  # Lambda Origin (API — Playwright runner)
   origin {
     domain_name = replace(replace(aws_lambda_function_url.runner.function_url, "https://", ""), "/", "")
     origin_id   = "lambda-api"
@@ -105,6 +123,19 @@ resource "aws_cloudfront_distribution" "main" {
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
       origin_read_timeout    = 60
+    }
+  }
+
+  # Lambda Origin (History API)
+  origin {
+    domain_name = replace(replace(aws_lambda_function_url.history.function_url, "https://", ""), "/", "")
+    origin_id   = "lambda-history"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
 
@@ -124,7 +155,21 @@ resource "aws_cloudfront_distribution" "main" {
     }
   }
 
-  # /api/* behavior — Lambda
+  # /api/history* behavior — History Lambda (must be before /api/*)
+  ordered_cache_behavior {
+    path_pattern           = "/api/history*"
+    target_origin_id       = "lambda-history"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+
+    cache_policy_id          = aws_cloudfront_cache_policy.api_no_cache.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.history_api.id
+
+    compress = false
+  }
+
+  # /api/* behavior — Playwright Lambda
   ordered_cache_behavior {
     path_pattern           = "/api/*"
     target_origin_id       = "lambda-api"

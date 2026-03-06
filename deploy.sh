@@ -55,6 +55,9 @@ aws s3 sync . "s3://${S3_BUCKET}" \
   --exclude "node_modules/*" \
   --exclude "infra/*" \
   --exclude "lambda/*" \
+  --exclude "lambda-history/*" \
+  --exclude "lambda-history.zip" \
+  --exclude "scripts/*" \
   --exclude "test-results/*" \
   --exclude "playwright-report/*" \
   --exclude "tests/*" \
@@ -77,11 +80,17 @@ aws cloudfront create-invalidation \
   --profile "${AWS_PROFILE}" \
   --region "${AWS_REGION}"
 
+echo "==> Step 8: Seed history data"
+cd "${PROJECT_DIR}"
+AWS_PROFILE="${AWS_PROFILE}" AWS_REGION="${AWS_REGION}" node scripts/seed-history.js
+
 echo ""
 echo "==> Deployment complete!"
+cd "${INFRA_DIR}"
 CLOUDFRONT_URL=$(terraform output -raw cloudfront_url)
 echo "    URL: ${CLOUDFRONT_URL}"
 echo "    v1:  ${CLOUDFRONT_URL}/"
 echo "    v2:  ${CLOUDFRONT_URL}/v2/"
 echo "    v1 tests: ${CLOUDFRONT_URL}/test-report.html"
 echo "    v2 tests: ${CLOUDFRONT_URL}/v2/test-report.html"
+echo "    History: ${CLOUDFRONT_URL}/history.html"

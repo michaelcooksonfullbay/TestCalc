@@ -32,7 +32,7 @@ echo "==> Step 4: Terraform apply (full infrastructure)"
 cd "${INFRA_DIR}"
 terraform apply -auto-approve
 
-echo "==> Step 4b: Update Lambda to use latest image"
+echo "==> Step 5: Update Lambda to use latest image"
 aws lambda update-function-code \
   --function-name "${ECR_REPO}" \
   --image-uri "${ECR_IMAGE}" \
@@ -44,7 +44,7 @@ aws lambda wait function-updated \
   --profile "${AWS_PROFILE}" \
   --region "${AWS_REGION}"
 
-echo "==> Step 5: Sync static files to S3"
+echo "==> Step 6: Sync static files to S3"
 S3_BUCKET=$(terraform output -raw s3_bucket_name)
 cd "${PROJECT_DIR}"
 
@@ -68,7 +68,7 @@ aws s3 sync . "s3://${S3_BUCKET}" \
   --exclude "*.md" \
   --delete
 
-echo "==> Step 6: Invalidate CloudFront cache"
+echo "==> Step 7: Invalidate CloudFront cache"
 cd "${INFRA_DIR}"
 CF_DIST_ID=$(terraform output -raw cloudfront_distribution_id)
 aws cloudfront create-invalidation \

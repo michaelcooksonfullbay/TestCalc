@@ -21,6 +21,5 @@ ENV AWS_LWA_READINESS_CHECK_MIN_UNHEALTHY_STATUS=500
 # Playwright/Lambda environment
 ENV HOME=/tmp
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-ENV CI=true
 
 CMD ["node", "lambda/server.js"]

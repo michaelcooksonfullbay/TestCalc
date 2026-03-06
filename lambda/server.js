@@ -1,5 +1,5 @@
 const http = require('http');
-const { spawn, execSync } = require('child_process');
+const { spawn } = require('child_process');
 const path = require('path');
 const net = require('net');
 

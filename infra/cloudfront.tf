@@ -6,6 +6,26 @@ resource "aws_cloudfront_origin_access_control" "s3" {
   signing_protocol                  = "sigv4"
 }
 
+# Cache policy for static files
+resource "aws_cloudfront_cache_policy" "static" {
+  name        = "${var.project_name}-static-cache"
+  min_ttl     = 0
+  default_ttl = 3600
+  max_ttl     = 86400
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
 # Cache policy for API (no caching)
 resource "aws_cloudfront_cache_policy" "api_no_cache" {
   name        = "${var.project_name}-api-no-cache"
@@ -96,16 +116,7 @@ resource "aws_cloudfront_distribution" "main" {
     cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-
-    min_ttl     = 0
-    default_ttl = 3600
-    max_ttl     = 86400
+    cache_policy_id = aws_cloudfront_cache_policy.static.id
 
     function_association {
       event_type   = "viewer-request"

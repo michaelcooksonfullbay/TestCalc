@@ -308,6 +308,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLoginUI();
     // Load recent history from DB
     loadDbHistory(username);
+    // Persist login across refreshes (only real logins, not ghost)
+    try { localStorage.setItem('testcalc_user', username); } catch (e) {}
+    // Fire-and-forget API login for consistency
+    fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    }).catch(() => {});
     return true;
   }
 
@@ -335,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function logout() {
     currentUser = null;
     // BUG: memoryValue is global, not reset on logout
+    try { localStorage.removeItem('testcalc_user'); } catch (e) {}
     renderHistoryPanel([]);
     updateLoginUI();
   }
@@ -503,210 +512,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // API docs BroadcastChannel — acts as a request/response server
-  const channel = new BroadcastChannel('testcalc-v2');
-  channel.addEventListener('message', (e) => {
-    if (!e.data || !e.data.requestId) return;
-    const { type, requestId } = e.data;
-    let response;
-
-    switch (type) {
-      case 'auth-login': {
-        const user = USERS[e.data.username];
-        if (!user || user.password !== e.data.password) {
-          response = { status: 401, body: { error: 'INVALID_CREDENTIALS', message: 'Invalid username or password' } };
-        } else {
-          // Actually log in on the main page
-          login(e.data.username, e.data.password);
-          response = { status: 200, body: { token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(e.data.username), user: { id: 'usr_' + e.data.username, username: e.data.username, createdAt: '2024-01-15T08:30:00Z' } } };
-        }
-        break;
-      }
-      case 'auth-logout': {
-        // Actually log out on the main page
-        logout();
-        response = { status: 200, body: { message: 'Session ended' } };
-        break;
-      }
-      case 'auth-signup': {
-        const { username, password, email, phone, firstname, lastname, zipcode, occupation } = e.data;
-        if (!username || !password || !email || !phone) {
-          response = { status: 400, body: { error: 'MISSING_FIELDS', message: 'Fields username, password, email, and phone are required' } };
-        } else if (USERS[username]) {
-          response = { status: 409, body: { error: 'USERNAME_TAKEN', message: 'Username already exists' } };
-        } else {
-          const phoneRegex = /^\(\d{3}\) \d{3}-\d{4}$/;
-          if (!phoneRegex.test(phone)) {
-            response = { status: 400, body: { error: 'INVALID_PHONE', message: 'Phone must be in format (XXX) XXX-XXXX' } };
-          } else {
-            // BUG: no email validation — accepts any string
-            USERS[username] = { password, email, phone, firstname: firstname || '', lastname: lastname || '', zipcode: zipcode || '', occupation: occupation || '', history: [], memory: 0 };
-            login(username, password);
-            response = { status: 201, body: { message: 'Account created', user: { id: 'usr_' + username, username, email, phone, createdAt: new Date().toISOString() } } };
-          }
-        }
-        break;
-      }
-      case 'get-history': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          const all = USERS[uid].history;
-          const offset = e.data.offset || 0;
-          const limit = e.data.limit || 50;
-          const sliced = all.slice(offset, offset + limit);
-          response = { status: 200, body: { userId: uid, entries: sliced.map(h => ({ ...h, timestamp: new Date().toISOString() })), total: all.length, limit, offset } };
-        }
-        break;
-      }
-      case 'add-history': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          const entry = { id: generateId(), expression: e.data.expression, result: e.data.result };
-          USERS[uid].history.push(entry);
-          response = { status: 201, body: { ...entry, userId: uid, timestamp: new Date().toISOString() } };
-        }
-        break;
-      }
-      case 'edit-history': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          const entry = USERS[uid].history.find(h => h.id === e.data.entryId);
-          if (!entry) {
-            response = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'No history entry with the specified ID' } };
-          } else {
-            if (e.data.expression !== undefined) entry.expression = e.data.expression;
-            if (e.data.result !== undefined) entry.result = e.data.result;
-            response = { status: 200, body: { ...entry, userId: uid, timestamp: new Date().toISOString() } };
-          }
-        }
-        break;
-      }
-      case 'delete-history-item': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          const idx = USERS[uid].history.findIndex(h => h.id === e.data.entryId);
-          if (idx === -1) {
-            response = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'No history entry with the specified ID' } };
-          } else {
-            const [removed] = USERS[uid].history.splice(idx, 1);
-            // BUG: save last deleted for resurrection
-            lastDeletedItem[uid] = removed;
-            response = { status: 200, body: { message: 'Entry deleted', id: removed.id } };
-          }
-        }
-        break;
-      }
-      case 'delete-all-history': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          const count = USERS[uid].history.length;
-          USERS[uid].history.length = 0;
-          response = { status: 200, body: { message: 'History cleared', deletedCount: count } };
-        }
-        break;
-      }
-      case 'calculate': {
-        const expr = e.data.expression;
-        if (!expr) {
-          response = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Expression is required' } };
-          break;
-        }
-        const normalized = expr.replace(/×/g, '*').replace(/÷/g, '/');
-        const tokens = normalized.match(/-?\d+\.?\d*|[+\-*/]/g);
-        if (!tokens || tokens.length === 0) {
-          response = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Could not parse expression' } };
-          break;
-        }
-        let calcResult = parseFloat(tokens[0]);
-        let calcError = false;
-        for (let i = 1; i < tokens.length; i += 2) {
-          const op = tokens[i];
-          const num = parseFloat(tokens[i + 1]);
-          if (isNaN(num)) { calcError = true; break; }
-          switch (op) {
-            case '+': calcResult += num; break;
-            case '-': calcResult -= num; break;
-            case '*': calcResult *= num; break;
-            case '/': calcResult /= num; break;
-            default: calcError = true;
-          }
-        }
-        if (calcError) {
-          response = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Malformed expression' } };
-        } else {
-          response = { status: 200, body: { expression: expr, result: String(calcResult), precision: 'float64', savedToHistory: false } };
-        }
-        break;
-      }
-      case 'validate': {
-        const expr = e.data.expression;
-        if (!expr) {
-          response = { status: 400, body: { error: 'MISSING_PARAMETER', message: "Query parameter 'expression' is required" } };
-          break;
-        }
-        const normalized = expr.replace(/×/g, '*').replace(/÷/g, '/');
-        const tokens = normalized.match(/-?\d+\.?\d*|[+\-*/]/g);
-        const warnings = [];
-        if (tokens) {
-          for (let i = 0; i < tokens.length - 1; i++) {
-            if (/^[+\-*/]$/.test(tokens[i]) && /^[+\-*/]$/.test(tokens[i + 1])) {
-              warnings.push('Consecutive operators at position ' + (i + 1));
-            }
-          }
-        }
-        const valid = !!(tokens && tokens.length > 0 && warnings.length === 0);
-        response = { status: 200, body: { expression: expr, valid, tokens: valid ? tokens : null, warnings } };
-        break;
-      }
-      case 'get-memory': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          response = { status: 200, body: { userId: uid, value: USERS[uid].memory } };
-        }
-        break;
-      }
-      case 'update-memory': {
-        const uid = e.data.userId;
-        if (!USERS[uid]) {
-          response = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'No user with the specified ID' } };
-        } else {
-          const op = e.data.operation;
-          const val = e.data.value !== undefined ? parseFloat(e.data.value) : 0;
-          if (!['add', 'subtract', 'set', 'clear'].includes(op)) {
-            response = { status: 400, body: { error: 'INVALID_OPERATION', message: 'Operation must be add, subtract, set, or clear' } };
-          } else {
-            switch (op) {
-              case 'add':      USERS[uid].memory += val; break;
-              case 'subtract': USERS[uid].memory -= val; break;
-              case 'set':      USERS[uid].memory = val; break;
-              case 'clear':    USERS[uid].memory = 0; break;
-            }
-            // BUG: API memory update doesn't trigger UI indicator refresh
-            // Does NOT update global memoryValue or call updateMemoryIndicator()
-            response = { status: 200, body: { userId: uid, value: USERS[uid].memory, operation: op } };
-          }
-        }
-        break;
-      }
-    }
-
-    if (response) {
-      channel.postMessage({ responseId: requestId, ...response });
-    }
-  });
-
   function handleDigit(d) {
     state = CalculatorEngine.inputDigit(state, d);
     render();
@@ -798,6 +603,14 @@ document.addEventListener('DOMContentLoaded', () => {
   render();
   updateLoginUI();
   updateMemoryIndicator();
+
+  // Restore session from localStorage (only real users, not ghost)
+  try {
+    const saved = localStorage.getItem('testcalc_user');
+    if (saved && USERS[saved]) {
+      login(saved, USERS[saved].password);
+    }
+  } catch (e) {}
 
   // ── Mobile tab bar ──
   (function () {

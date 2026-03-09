@@ -33,6 +33,9 @@ resource "aws_iam_role_policy" "lambda_history_dynamodb" {
           "dynamodb:Scan",
           "dynamodb:PutItem",
           "dynamodb:UpdateItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:BatchWriteItem",
         ]
         Resource = aws_dynamodb_table.history.arn
       }

@@ -1136,29 +1136,12 @@
   </div>
 
   <script>
-    const channel = new BroadcastChannel('testcalc-v2');
-    const pending = {};
-
-    // Listen for responses from the main app
-    channel.addEventListener('message', (e) => {
-      if (e.data && e.data.responseId && pending[e.data.responseId]) {
-        pending[e.data.responseId](e.data);
-        delete pending[e.data.responseId];
-      }
-    });
-
-    function sendToApp(type, data) {
-      return new Promise((resolve) => {
-        const requestId = 'req_' + Math.random().toString(36).slice(2);
-        pending[requestId] = resolve;
-        channel.postMessage({ type, requestId, ...data });
-        setTimeout(() => {
-          if (pending[requestId]) {
-            delete pending[requestId];
-            resolve({ status: 503, body: { error: 'SERVICE_UNAVAILABLE', message: 'Calculator app is not open. Open the main page in another tab first.' } });
-          }
-        }, 2000);
-      });
+    async function apiFetch(method, url, body) {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(url, opts);
+      const json = await res.json();
+      return { status: res.status, body: json };
     }
 
     function toggle(el) {
@@ -1196,36 +1179,38 @@
 
           case 'auth-login': {
             const body = JSON.parse(form.querySelector('textarea').value);
-            result = await sendToApp('auth-login', { username: body.username, password: body.password });
+            result = await apiFetch('POST', '/api/auth/login', body);
             break;
           }
 
           case 'auth-logout': {
-            result = await sendToApp('auth-logout', {});
+            result = await apiFetch('POST', '/api/auth/logout', {});
             break;
           }
 
           case 'auth-signup': {
             const body = JSON.parse(form.querySelector('textarea').value);
-            result = await sendToApp('auth-signup', { username: body.username, password: body.password, email: body.email, phone: body.phone, firstname: body.firstname, lastname: body.lastname, zipcode: body.zipcode, occupation: body.occupation });
+            result = await apiFetch('POST', '/api/auth/signup', body);
             break;
           }
 
           case 'get-history': {
             const userId = form.querySelector('[data-field="userId"]').value.trim();
-            const limit = parseInt(form.querySelector('[data-field="limit"]').value) || undefined;
-            const offset = parseInt(form.querySelector('[data-field="offset"]').value) || undefined;
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            result = await sendToApp('get-history', { userId, limit, offset });
+            const limit = form.querySelector('[data-field="limit"]').value.trim();
+            const offset = form.querySelector('[data-field="offset"]').value.trim();
+            let url = '/api/users/' + encodeURIComponent(userId) + '/history';
+            const qs = new URLSearchParams();
+            if (limit) qs.set('limit', limit);
+            if (offset) qs.set('offset', offset);
+            if (qs.toString()) url += '?' + qs;
+            result = await apiFetch('GET', url);
             break;
           }
 
           case 'add-history': {
             const userId = form.querySelector('[data-field="userId"]').value.trim();
             const body = JSON.parse(form.querySelector('textarea').value);
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            if (!body.expression || !body.result) { result = { status: 400, body: { error: 'INVALID_BODY', message: "Fields 'expression' and 'result' are required" } }; break; }
-            result = await sendToApp('add-history', { userId, expression: String(body.expression), result: String(body.result) });
+            result = await apiFetch('POST', '/api/users/' + encodeURIComponent(userId) + '/history', body);
             break;
           }
 
@@ -1233,56 +1218,45 @@
             const userId = form.querySelector('[data-field="userId"]').value.trim();
             const entryId = form.querySelector('[data-field="entryId"]').value.trim();
             const body = JSON.parse(form.querySelector('textarea').value);
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            if (!entryId) { result = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'entryId is required' } }; break; }
-            if (!body.expression && !body.result) { result = { status: 400, body: { error: 'INVALID_BODY', message: "At least one of 'expression' or 'result' is required" } }; break; }
-            result = await sendToApp('edit-history', { userId, entryId, expression: body.expression, result: body.result });
+            result = await apiFetch('PUT', '/api/users/' + encodeURIComponent(userId) + '/history/' + encodeURIComponent(entryId), body);
             break;
           }
 
           case 'delete-history-item': {
             const userId = form.querySelector('[data-field="userId"]').value.trim();
             const entryId = form.querySelector('[data-field="entryId"]').value.trim();
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            if (!entryId) { result = { status: 404, body: { error: 'ENTRY_NOT_FOUND', message: 'entryId is required' } }; break; }
-            result = await sendToApp('delete-history-item', { userId, entryId });
+            result = await apiFetch('DELETE', '/api/users/' + encodeURIComponent(userId) + '/history/' + encodeURIComponent(entryId));
             break;
           }
 
           case 'delete-all-history': {
             const userId = form.querySelector('[data-field="userId"]').value.trim();
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            result = await sendToApp('delete-all-history', { userId });
+            result = await apiFetch('DELETE', '/api/users/' + encodeURIComponent(userId) + '/history');
             break;
           }
 
           case 'calculate': {
             const body = JSON.parse(form.querySelector('textarea').value);
-            if (!body.expression) { result = { status: 400, body: { error: 'INVALID_EXPRESSION', message: 'Expression is required' } }; break; }
-            result = await sendToApp('calculate', { expression: body.expression });
+            result = await apiFetch('POST', '/api/calculate', body);
             break;
           }
 
           case 'validate': {
             const expression = form.querySelector('[data-field="expression"]').value.trim();
-            if (!expression) { result = { status: 400, body: { error: 'MISSING_PARAMETER', message: "Query parameter 'expression' is required" } }; break; }
-            result = await sendToApp('validate', { expression });
+            result = await apiFetch('GET', '/api/calculate/validate?expression=' + encodeURIComponent(expression));
             break;
           }
 
           case 'get-memory': {
             const userId = form.querySelector('[data-field="userId"]').value.trim();
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            result = await sendToApp('get-memory', { userId });
+            result = await apiFetch('GET', '/api/users/' + encodeURIComponent(userId) + '/memory');
             break;
           }
 
           case 'update-memory': {
             const userId = form.querySelector('[data-field="userId"]').value.trim();
             const body = JSON.parse(form.querySelector('textarea').value);
-            if (!userId) { result = { status: 404, body: { error: 'USER_NOT_FOUND', message: 'userId is required' } }; break; }
-            if (!body.operation) { result = { status: 400, body: { error: 'INVALID_OPERATION', message: 'Operation must be add, subtract, set, or clear' } }; break; }
-            result = await sendToApp('update-memory', { userId, operation: body.operation, value: body.value });
+            result = await apiFetch('PUT', '/api/users/' + encodeURIComponent(userId) + '/memory', body);
             break;
           }
         }

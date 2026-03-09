@@ -155,23 +155,9 @@ resource "aws_cloudfront_distribution" "main" {
     }
   }
 
-  # /api/history* behavior — History Lambda (must be before /api/*)
+  # /api/run-tests behavior — Playwright Lambda (specific path before catch-all)
   ordered_cache_behavior {
-    path_pattern           = "/api/history*"
-    target_origin_id       = "lambda-history"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD"]
-
-    cache_policy_id          = aws_cloudfront_cache_policy.api_no_cache.id
-    origin_request_policy_id = aws_cloudfront_origin_request_policy.history_api.id
-
-    compress = false
-  }
-
-  # /api/* behavior — Playwright Lambda
-  ordered_cache_behavior {
-    path_pattern           = "/api/*"
+    path_pattern           = "/api/run-tests"
     target_origin_id       = "lambda-api"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -179,6 +165,20 @@ resource "aws_cloudfront_distribution" "main" {
 
     cache_policy_id          = aws_cloudfront_cache_policy.api_no_cache.id
     origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
+
+    compress = false
+  }
+
+  # /api/* behavior — API Lambda (auth, history, calculate, memory)
+  ordered_cache_behavior {
+    path_pattern           = "/api/*"
+    target_origin_id       = "lambda-history"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods         = ["GET", "HEAD"]
+
+    cache_policy_id          = aws_cloudfront_cache_policy.api_no_cache.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.history_api.id
 
     compress = false
   }

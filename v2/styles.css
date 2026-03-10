@@ -474,9 +474,10 @@ button:active {
   transform: scale(0.96);
 }
 
-button:focus-visible {
+button:focus {
   outline: 3px solid #5b8def;
   outline-offset: 2px;
+  box-shadow: 0 0 8px rgba(91, 141, 239, 0.4);
 }
 
 /* Operator buttons */

@@ -1,15 +1,38 @@
 # TestCalc Interview — Evaluation & Feedback Generation Guide
 
-> This document contains everything needed to generate a structured interview feedback write-up from a transcript and interviewer summary. It is intended for use by an AI assistant in a fresh context.
+> This document contains everything needed to support an interviewer before, during, and after a TestCalc interview — and to generate a structured feedback write-up afterward. It is intended for use by an AI assistant in a fresh context.
 
 ---
 
-## What You'll Receive
+## How This Session Works
 
-1. **A quick summary from the interviewer** — their gut read, key moments, hire/no-hire leaning, and anything specific they want emphasized or excluded.
+This context will be used across the full lifecycle of one interview. The interviewer will feed you information in stages — work with whatever you have at each point.
+
+### Stage 1: Pre-Interview Briefing
+Before the interview happens, the interviewer may provide some or all of:
+
+- **Feedback from a prior interview** — another interviewer's write-up from an earlier round (e.g., a technical screen). This often contains specific concerns or open questions that this interview should probe.
+- **The candidate's resume** — background, experience, tooling, domain.
+- **Other context** — recruiter notes, the role being hired for, specific things to watch for.
+
+**Your job at this stage:** Synthesize what you've been given. Provide a concise briefing:
+- Key strengths and concerns from the prior interview (if provided)
+- Specific things to watch for or probe during the TestCalc session
+- Any patterns from the resume that connect to (or contradict) prior feedback
+- Questions or scenarios that would help validate open concerns
+
+Keep it actionable — the interviewer is about to walk into the room.
+
+### Stage 2: The Interview Happens
+The interviewer conducts the 45-minute TestCalc session. You won't see this in real-time. Wait for the interviewer to return with their notes.
+
+### Stage 3: Post-Interview Feedback Generation
+After the interview, the interviewer will provide:
+
+1. **A quick summary** — their gut read, key moments, hire/no-hire leaning, and anything specific they want emphasized or excluded.
 2. **A transcript** — the full interview conversation (may be rough/auto-transcribed).
 
-Your job: produce a polished interview feedback document.
+**Your job at this stage:** Produce a polished interview feedback document using the format below. If you received prior-round feedback in Stage 1, connect your evaluation to it — note what was validated, what was contradicted, and what remains unclear.
 
 ---
 
@@ -19,7 +42,7 @@ Match this structure exactly. Every section uses these four headings. Tone is pr
 
 ```
 INTERVIEW: Testing Strategy & Applied QA
-Session: Principal SDET / Associate Manager
+Session: Principal SDET
 Interviewer: Michael Cookson
 Additional Interviewer: [name and title if present]
 Interviewee: [candidate name]
@@ -51,7 +74,7 @@ Overall Conclusion
 [2-3 short paragraphs:
 1. Credit where due — what was genuinely strong
 2. The pattern/concern — what fell short and why it matters for this role
-3. Connection to other interviews if applicable]
+3. Connection to prior interviews — did this session validate or contradict earlier feedback? What's the combined picture?]
 
 Recommendation: [Hire / No Hire]
 
@@ -62,8 +85,15 @@ Recommendation: [Hire / No Hire]
 - Use `Question` / `Answer` / `General Thoughts` / `Conclusion` as plain text headings (not markdown ##)
 - Sections separated by `---`
 - Quote the candidate directly when their words are revealing (use quotation marks, not block quotes)
-- Keep each section tight — the entire document should be scannable in 2-3 minutes
+- Keep each section tight. The entire document should be scannable in 2-3 minutes
 - The audience is a hiring manager (Kirk) who needs to make a final decision quickly
+- **Avoid em dashes.** Do not use em dashes (—) in the output. Use periods, commas, parentheses, or restructure the sentence instead. Em dash overuse is a telltale AI writing pattern.
+
+### Output Delivery
+- Write the final feedback as an **HTML file** to `/Users/michaelcookson/Documents/` with the naming convention `[CANDIDATE-LASTNAME]-FEEDBACK-COOKSON.html`
+- The HTML should render cleanly in a browser so the interviewer can copy/paste directly into an email
+- Use simple styling: Arial font, max-width 800px, centered, with `<hr>` between sections and bold `<div>` headings for Question/Answer/General Thoughts/Conclusion
+- Also write a matching `.md` version to the same directory for archival purposes
 
 ---
 

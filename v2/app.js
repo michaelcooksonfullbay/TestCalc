@@ -597,6 +597,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // BUG: '=' key not mapped — only Enter triggers equals
     else if (e.key === 'Backspace') handleDelete();
     else if (e.key === 'Escape') handleClear();
+    else if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      const btns = Array.from(calculatorEl.querySelectorAll('.buttons button'));
+      const idx = btns.indexOf(document.activeElement);
+      if (idx === -1) return; // only when a calc button is already focused
+      e.preventDefault();
+      const cols = 4;
+      let newIdx = idx;
+      switch (e.key) {
+        case 'ArrowLeft':  newIdx = Math.max(0, idx - 1); break;
+        case 'ArrowRight': newIdx = Math.min(btns.length - 1, idx + 1); break;
+        case 'ArrowUp':    newIdx = idx - cols >= 0 ? idx - cols : idx; break;
+        case 'ArrowDown':  newIdx = idx + cols < btns.length ? idx + cols : idx; break;
+      }
+      btns[newIdx].focus();
+    }
     // No keyboard shortcuts for memory operations (intentional omission)
   });
 

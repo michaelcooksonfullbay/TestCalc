@@ -543,9 +543,19 @@ document.addEventListener('DOMContentLoaded', () => {
     render();
   }
 
+  let clearClickTimes = [];
+
   function handleClear() {
     state = CalculatorEngine.clear();
     render();
+
+    const now = Date.now();
+    clearClickTimes.push(now);
+    clearClickTimes = clearClickTimes.filter(t => now - t < 500);
+    if (clearClickTimes.length >= 3) {
+      historyEl.textContent = '';
+      clearClickTimes = [];
+    }
   }
 
   function handleEquals() {
@@ -593,6 +603,10 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (e.key === '-') handleOperator('-');
     else if (e.key === '*') handleOperator('\u00d7');
     else if (e.key === '/') { e.preventDefault(); handleOperator('\u00f7'); }
+    else if (['a', 'p'].includes(e.key.toLowerCase())) handleOperator('+');
+    else if (e.key.toLowerCase() === 'm') handleOperator('-');
+    else if (['x', 't'].includes(e.key.toLowerCase())) handleOperator('\u00d7');
+    else if (e.key.toLowerCase() === 'd') handleOperator('\u00f7');
     else if (e.key === 'Enter') handleEquals();
     // BUG: '=' key not mapped — only Enter triggers equals
     else if (e.key === 'Backspace') handleDelete();

@@ -606,7 +606,7 @@
 
           renderResults(data);
         } catch (err) {
-          statusEl.innerHTML = '<span style="color:#c0392b">Could not connect to test server.</span>';
+          statusEl.innerHTML = '<span style="color:#c0392b">Could not connect to test server. Start it with: <code>npm run test:server</code></span>';
         }
         runBtn.disabled = false;
       });

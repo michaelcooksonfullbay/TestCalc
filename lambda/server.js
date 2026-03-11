@@ -1,6 +1,7 @@
 const http = require('http');
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 const net = require('net');
 
 const PORT = process.env.PORT || 8080;
@@ -65,10 +66,12 @@ function handleRunTests(req, res) {
   req.on('end', async () => {
     let version = 'v1';
     let device = 'desktop';
+    let grep = '';
     try {
       const parsed = JSON.parse(body);
       version = parsed.version || 'v1';
       device = parsed.device || 'desktop';
+      grep = parsed.grep || '';
     } catch {}
 
     try {
@@ -92,6 +95,9 @@ function handleRunTests(req, res) {
 
     const lambdaConfig = path.join(__dirname, 'playwright.config.ts');
     const args = ['test', '--config', lambdaConfig, '--reporter=json', `--project=${project}`, '--output=/tmp/test-results'];
+    if (grep) {
+      args.push('--grep', grep);
+    }
     console.log(`Running: playwright ${args.join(' ')}`);
 
     const child = spawn(PLAYWRIGHT_BIN, args, { env, cwd: APP_DIR, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -110,6 +116,7 @@ function handleRunTests(req, res) {
 
       try {
         const result = JSON.parse(stdout);
+        inlineAttachments(result);
         res.end(JSON.stringify(result));
       } catch {
         res.end(JSON.stringify({
@@ -129,6 +136,32 @@ function handleRunTests(req, res) {
       res.end(JSON.stringify({ error: true, message: err.message }));
     });
   });
+}
+
+function inlineAttachments(result) {
+  function walkSuites(suite) {
+    if (suite.specs) {
+      suite.specs.forEach(spec => {
+        spec.tests.forEach(t => {
+          t.results.forEach(r => {
+            if (r.attachments) {
+              r.attachments.forEach(att => {
+                if (att.path && att.contentType && att.contentType.startsWith('image/')) {
+                  try {
+                    const data = fs.readFileSync(att.path);
+                    att.body = data.toString('base64');
+                    delete att.path;
+                  } catch {}
+                }
+              });
+            }
+          });
+        });
+      });
+    }
+    if (suite.suites) suite.suites.forEach(walkSuites);
+  }
+  if (result.suites) result.suites.forEach(walkSuites);
 }
 
 const server = http.createServer((req, res) => {

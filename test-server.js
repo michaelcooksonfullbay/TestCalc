@@ -50,10 +50,12 @@ function handleRunTests(req, res) {
   req.on('end', () => {
     let version = 'v1';
     let device = 'desktop';
+    let grep = '';
     try {
       const parsed = JSON.parse(body);
       version = parsed.version || 'v1';
       device = parsed.device || 'desktop';
+      grep = parsed.grep || '';
     } catch {}
 
     const project = device === 'mobile' ? 'mobile' : 'chromium';
@@ -63,6 +65,9 @@ function handleRunTests(req, res) {
     }
 
     const args = ['playwright', 'test', '--reporter=json', `--project=${project}`];
+    if (grep) {
+      args.push('--grep', grep);
+    }
     const child = spawn('npx', args, { env, cwd: __dirname });
 
     let stdout = '';
@@ -78,6 +83,7 @@ function handleRunTests(req, res) {
 
       try {
         const result = JSON.parse(stdout);
+        inlineAttachments(result);
         res.end(JSON.stringify(result));
       } catch {
         // If JSON parsing fails, return a structured error
@@ -90,6 +96,32 @@ function handleRunTests(req, res) {
       }
     });
   });
+}
+
+function inlineAttachments(result) {
+  function walkSuites(suite) {
+    if (suite.specs) {
+      suite.specs.forEach(spec => {
+        spec.tests.forEach(t => {
+          t.results.forEach(r => {
+            if (r.attachments) {
+              r.attachments.forEach(att => {
+                if (att.path && att.contentType && att.contentType.startsWith('image/')) {
+                  try {
+                    const data = fs.readFileSync(att.path);
+                    att.body = data.toString('base64');
+                    delete att.path;
+                  } catch {}
+                }
+              });
+            }
+          });
+        });
+      });
+    }
+    if (suite.suites) suite.suites.forEach(walkSuites);
+  }
+  if (result.suites) result.suites.forEach(walkSuites);
 }
 
 const server = http.createServer((req, res) => {

@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'off',
-    screenshot: 'off',
+    screenshot: 'only-on-failure',
     launchOptions: {
       args: [
         '--no-sandbox',

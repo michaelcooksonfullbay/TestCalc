@@ -229,15 +229,6 @@
     .run-btn:hover { background: #2c3e50; }
     .run-btn:disabled { background: #95a5a6; cursor: not-allowed; }
 
-    .toggle-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: #666;
-      cursor: pointer;
-    }
-
     .auto-status {
       min-height: 40px;
     }
@@ -271,6 +262,57 @@
     }
 
     .auto-link:hover { text-decoration: underline; }
+
+    .last-run {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 8px;
+    }
+
+    .rerun-btn {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-size: 11px;
+      color: #666;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .rerun-btn:hover { background: #f5f5f5; border-color: #bbb; }
+    .rerun-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .screenshot-thumb {
+      margin-top: 6px;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      max-width: 200px;
+      max-height: 120px;
+    }
+
+    .screenshot-thumb:hover { border-color: #999; }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .lightbox-overlay.active { display: flex; }
+
+    .lightbox-overlay img {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
   </style>
 </head>
 <body>
@@ -558,101 +600,69 @@
       </table>
     </div>
 
-    <!-- Automated Tests (Playwright) -->
+    <!-- Automated Tests — Desktop -->
     <div class="suite">
       <div class="suite-header">
-        <h2>Automated Tests (Playwright)</h2>
-        <span class="suite-count" id="auto-suite-count"></span>
+        <h2>Automated Tests &mdash; Desktop</h2>
+        <span class="suite-count" id="auto-suite-count-desktop"></span>
       </div>
       <div class="auto-controls">
-        <button class="run-btn" id="run-tests-btn">Run</button>
-        <label class="toggle-label">
-          <input type="checkbox" id="mobile-toggle"> Mobile (iPhone 13)
-        </label>
+        <button class="run-btn" id="run-tests-btn-desktop">Run</button>
       </div>
-      <div class="auto-status" id="auto-status"></div>
-      <div id="auto-results"></div>
+      <div class="auto-status" id="auto-status-desktop"></div>
+      <div id="auto-results-desktop"></div>
     </div>
+
+    <!-- Automated Tests — Mobile -->
+    <div class="suite">
+      <div class="suite-header">
+        <h2>Automated Tests &mdash; Mobile (iPhone 13)</h2>
+        <span class="suite-count" id="auto-suite-count-mobile"></span>
+      </div>
+      <div class="auto-controls">
+        <button class="run-btn" id="run-tests-btn-mobile">Run</button>
+      </div>
+      <div class="auto-status" id="auto-status-mobile"></div>
+      <div id="auto-results-mobile"></div>
+    </div>
+  </div>
+
+  <!-- Lightbox overlay -->
+  <div class="lightbox-overlay" id="lightbox">
+    <img id="lightbox-img" src="" alt="Screenshot">
   </div>
 
   <script>
     (function () {
-      const runBtn = document.getElementById('run-tests-btn');
-      const mobileToggle = document.getElementById('mobile-toggle');
-      const statusEl = document.getElementById('auto-status');
-      const resultsEl = document.getElementById('auto-results');
-      const suiteCount = document.getElementById('auto-suite-count');
+      const CLOUD_API = 'https://d1mc11gwgrnv15.cloudfront.net';
+      const VERSION = 'v1';
 
-      runBtn.addEventListener('click', async () => {
-        runBtn.disabled = true;
-        statusEl.innerHTML = '<span class="spinner"></span> Running tests…';
-        resultsEl.innerHTML = '';
-        suiteCount.textContent = '';
+      // Lightbox
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      lightbox.addEventListener('click', () => { lightbox.classList.remove('active'); });
 
-        const device = mobileToggle.checked ? 'mobile' : 'desktop';
+      function openLightbox(src) {
+        lightboxImg.src = src;
+        lightbox.classList.add('active');
+      }
+
+      async function postRunTests(payload) {
         try {
           const resp = await fetch('/api/run-tests', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ version: 'v1', device }),
+            body: JSON.stringify(payload),
           });
-          const data = await resp.json();
-
-          if (data.error) {
-            statusEl.innerHTML = '<span style="color:#c0392b">Test run failed. Check server console.</span>';
-            runBtn.disabled = false;
-            return;
-          }
-
-          renderResults(data);
-        } catch (err) {
-          statusEl.innerHTML = '<span style="color:#c0392b">Could not connect to test server. Start it with: <code>npm run test:server</code></span>';
+          return await resp.json();
+        } catch {
+          const resp = await fetch(CLOUD_API + '/api/run-tests', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          return await resp.json();
         }
-        runBtn.disabled = false;
-      });
-
-      function renderResults(data) {
-        const suites = data.suites || [];
-        const allTests = [];
-        function collectTests(suite) {
-          if (suite.specs) {
-            suite.specs.forEach(spec => {
-              spec.tests.forEach(t => {
-                const result = t.results[t.results.length - 1];
-                allTests.push({
-                  name: spec.title,
-                  status: t.status,
-                  duration: result ? result.duration : 0,
-                  error: result && result.error ? result.error.message : null,
-                });
-              });
-            });
-          }
-          if (suite.suites) suite.suites.forEach(collectTests);
-        }
-        suites.forEach(collectTests);
-
-        const passed = allTests.filter(t => t.status === 'expected').length;
-        const failed = allTests.filter(t => t.status === 'unexpected').length;
-        const flaky = allTests.filter(t => t.status === 'flaky').length;
-
-        suiteCount.textContent = allTests.length + ' tests';
-        statusEl.innerHTML = '';
-
-        let html = '<table><thead><tr><th>Test Name</th><th style="width:80px">Status</th><th style="width:80px">Duration</th></tr></thead><tbody>';
-        allTests.forEach(t => {
-          const pillClass = t.status === 'expected' ? 'pill-pass' : t.status === 'unexpected' ? 'pill-fail' : 'pill-flaky';
-          const pillText = t.status === 'expected' ? 'Pass' : t.status === 'unexpected' ? 'Fail' : 'Flaky';
-          const dur = (t.duration / 1000).toFixed(1) + 's';
-          const errorHtml = t.error ? '<div class="failure-msg">' + escapeHtml(t.error.split('\n')[0]) + '</div>' : '';
-          html += '<tr><td>' + escapeHtml(t.name) + errorHtml + '</td><td><span class="pill ' + pillClass + '">' + pillText + '</span></td><td class="duration">' + dur + '</td></tr>';
-        });
-        html += '</tbody></table>';
-
-        html += '<div class="auto-summary">' + passed + ' passed, ' + failed + ' failed' + (flaky ? ', ' + flaky + ' flaky' : '') + '</div>';
-        html += '<a class="auto-link" href="/playwright-report/index.html" target="_blank">View full Playwright report</a>';
-
-        resultsEl.innerHTML = html;
       }
 
       function escapeHtml(str) {
@@ -660,6 +670,174 @@
         div.textContent = str;
         return div.innerHTML;
       }
+
+      function escapeRegex(str) {
+        return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      }
+
+      function collectTests(data) {
+        const suites = data.suites || [];
+        const allTests = [];
+        function walk(suite) {
+          if (suite.specs) {
+            suite.specs.forEach(spec => {
+              spec.tests.forEach(t => {
+                const result = t.results[t.results.length - 1];
+                const attachments = result && result.attachments ? result.attachments : [];
+                allTests.push({
+                  name: spec.title,
+                  status: t.status,
+                  duration: result ? result.duration : 0,
+                  error: result && result.error ? result.error.message : null,
+                  attachments: attachments,
+                });
+              });
+            });
+          }
+          if (suite.suites) suite.suites.forEach(walk);
+        }
+        suites.forEach(walk);
+        return allTests;
+      }
+
+      function buildScreenshotHtml(t) {
+        let html = '';
+        if (t.attachments) {
+          t.attachments.forEach(att => {
+            if (att.body && att.contentType && att.contentType.startsWith('image/')) {
+              const src = 'data:' + att.contentType + ';base64,' + att.body;
+              html += '<img class="screenshot-thumb" src="' + src + '" onclick="window.__openLightbox(this.src)" alt="Failure screenshot">';
+            }
+          });
+        }
+        return html;
+      }
+
+      // Expose for inline onclick
+      window.__openLightbox = openLightbox;
+
+      function cacheKey(device) {
+        return 'testcalc-' + VERSION + '-' + device + '-results';
+      }
+
+      function saveCache(device, data) {
+        try {
+          localStorage.setItem(cacheKey(device), JSON.stringify({ data: data, timestamp: Date.now() }));
+        } catch {}
+      }
+
+      function loadCache(device) {
+        try {
+          const raw = localStorage.getItem(cacheKey(device));
+          if (raw) return JSON.parse(raw);
+        } catch {}
+        return null;
+      }
+
+      function setupSection(device) {
+        const suffix = device;
+        const runBtn = document.getElementById('run-tests-btn-' + suffix);
+        const statusEl = document.getElementById('auto-status-' + suffix);
+        const resultsEl = document.getElementById('auto-results-' + suffix);
+        const suiteCountEl = document.getElementById('auto-suite-count-' + suffix);
+
+        // Track current tests for rerun updates
+        let currentTests = [];
+
+        function renderResults(allTests, timestamp) {
+          currentTests = allTests;
+          const passed = allTests.filter(t => t.status === 'expected').length;
+          const failed = allTests.filter(t => t.status === 'unexpected').length;
+          const flaky = allTests.filter(t => t.status === 'flaky').length;
+
+          suiteCountEl.textContent = allTests.length + ' tests';
+          statusEl.innerHTML = '';
+
+          let html = '';
+          if (timestamp) {
+            const d = new Date(timestamp);
+            html += '<div class="last-run">Last run: ' + d.toLocaleString() + '</div>';
+          }
+
+          html += '<table><thead><tr><th>Test Name</th><th style="width:80px">Status</th><th style="width:80px">Duration</th><th style="width:70px">Action</th></tr></thead><tbody>';
+          allTests.forEach((t, idx) => {
+            const pillClass = t.status === 'expected' ? 'pill-pass' : t.status === 'unexpected' ? 'pill-fail' : 'pill-flaky';
+            const pillText = t.status === 'expected' ? 'Pass' : t.status === 'unexpected' ? 'Fail' : 'Flaky';
+            const dur = (t.duration / 1000).toFixed(1) + 's';
+            const errorHtml = t.error ? '<div class="failure-msg">' + escapeHtml(t.error.split('\n')[0]) + '</div>' : '';
+            const screenshotHtml = buildScreenshotHtml(t);
+            html += '<tr data-test-idx="' + idx + '"><td>' + escapeHtml(t.name) + errorHtml + screenshotHtml + '</td><td><span class="pill ' + pillClass + '">' + pillText + '</span></td><td class="duration">' + dur + '</td><td><button class="rerun-btn" data-test-name="' + escapeHtml(t.name).replace(/"/g, '&quot;') + '" data-test-idx="' + idx + '">Rerun</button></td></tr>';
+          });
+          html += '</tbody></table>';
+
+          html += '<div class="auto-summary">' + passed + ' passed, ' + failed + ' failed' + (flaky ? ', ' + flaky + ' flaky' : '') + '</div>';
+          html += '<a class="auto-link" href="/playwright-report/index.html" target="_blank">View full Playwright report</a>';
+
+          resultsEl.innerHTML = html;
+
+          // Wire up rerun buttons
+          resultsEl.querySelectorAll('.rerun-btn').forEach(btn => {
+            btn.addEventListener('click', () => rerunTest(btn));
+          });
+        }
+
+        async function rerunTest(btn) {
+          const testName = btn.getAttribute('data-test-name');
+          const testIdx = parseInt(btn.getAttribute('data-test-idx'), 10);
+          btn.disabled = true;
+          btn.textContent = '...';
+
+          try {
+            const grep = escapeRegex(testName);
+            const data = await postRunTests({ version: VERSION, device: device, grep: grep });
+            if (!data.error) {
+              const newTests = collectTests(data);
+              if (newTests.length > 0) {
+                currentTests[testIdx] = newTests[0];
+                saveCache(device, { suites: data.suites });
+                renderResults(currentTests, Date.now());
+                return;
+              }
+            }
+          } catch {}
+          btn.disabled = false;
+          btn.textContent = 'Rerun';
+        }
+
+        runBtn.addEventListener('click', async () => {
+          runBtn.disabled = true;
+          statusEl.innerHTML = '<span class="spinner"></span> Running tests…';
+          resultsEl.innerHTML = '';
+          suiteCountEl.textContent = '';
+
+          try {
+            const data = await postRunTests({ version: VERSION, device: device });
+            if (data.error) {
+              statusEl.innerHTML = '<span style="color:#c0392b">Test run failed. Check server console.</span>';
+              runBtn.disabled = false;
+              return;
+            }
+            saveCache(device, data);
+            const allTests = collectTests(data);
+            renderResults(allTests, Date.now());
+          } catch {
+            statusEl.innerHTML = '<span style="color:#c0392b">Could not connect to test server.</span>';
+          }
+          runBtn.disabled = false;
+        });
+
+        // Load cached results on page load
+        const cached = loadCache(device);
+        if (cached && cached.data) {
+          const allTests = collectTests(cached.data);
+          if (allTests.length > 0) {
+            renderResults(allTests, cached.timestamp);
+          }
+        }
+      }
+
+      setupSection('desktop');
+      setupSection('mobile');
     })();
   </script>
 </body>

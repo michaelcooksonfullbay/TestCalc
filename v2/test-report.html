@@ -552,21 +552,12 @@
       }
 
       async function postRunTests(payload) {
-        try {
-          const resp = await fetch('/api/run-tests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          return await resp.json();
-        } catch {
-          const resp = await fetch(CLOUD_API + '/api/run-tests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          });
-          return await resp.json();
-        }
+        const resp = await fetch(CLOUD_API + '/api/run-tests', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        return await resp.json();
       }
 
       function escapeHtml(str) {

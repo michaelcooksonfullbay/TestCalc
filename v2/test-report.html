@@ -557,7 +557,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        return await resp.json();
+        if (!resp.ok) {
+          throw new Error('HTTP ' + resp.status + ': ' + resp.statusText);
+        }
+        const text = await resp.text();
+        try {
+          return JSON.parse(text);
+        } catch {
+          throw new Error('Invalid JSON response (first 200 chars): ' + text.slice(0, 200));
+        }
       }
 
       function escapeHtml(str) {
@@ -712,8 +720,8 @@
             saveCache(device, data);
             const allTests = collectTests(data);
             renderResults(allTests, Date.now());
-          } catch {
-            statusEl.innerHTML = '<span style="color:#c0392b">Could not connect to test server.</span>';
+          } catch (err) {
+            statusEl.innerHTML = '<span style="color:#c0392b">Could not connect to test server: ' + escapeHtml(err.message) + '</span>';
           }
           runBtn.disabled = false;
         });

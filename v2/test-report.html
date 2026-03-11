@@ -538,7 +538,7 @@
 
   <script>
     (function () {
-      const CLOUD_API = 'https://d1mc11gwgrnv15.cloudfront.net';
+      const API_BASE = 'https://d1mc11gwgrnv15.cloudfront.net';
       const VERSION = 'v2';
 
       // Lightbox
@@ -552,7 +552,7 @@
       }
 
       async function postRunTests(payload) {
-        const resp = await fetch(CLOUD_API + '/api/run-tests', {
+        const resp = await fetch(API_BASE + '/api/run-tests', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),

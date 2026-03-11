@@ -77,7 +77,7 @@ function handleRunTests(req, res) {
     try {
       await ensureServeRunning();
     } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: true, message: `Failed to start serve: ${err.message}` }));
       return;
     }
@@ -111,7 +111,6 @@ function handleRunTests(req, res) {
       console.log(`Playwright exited with code ${code}, stdout=${stdout.length}b, stderr=${stderr.length}b`);
       res.writeHead(200, {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       });
 
       try {
@@ -131,7 +130,6 @@ function handleRunTests(req, res) {
     child.on('error', (err) => {
       res.writeHead(500, {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
       });
       res.end(JSON.stringify({ error: true, message: err.message }));
     });
@@ -174,13 +172,10 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // CORS preflight
+  // CORS preflight — handled by Lambda Function URL config;
+  // do not add CORS headers here (duplicates cause browser rejection)
   if (req.method === 'OPTIONS') {
-    res.writeHead(204, {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    });
+    res.writeHead(204);
     res.end();
     return;
   }
